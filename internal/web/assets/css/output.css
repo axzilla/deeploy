@@ -949,8 +949,20 @@ body {
   height: 100vh;
 }
 
+.\!max-h-\[1000px\] {
+  max-height: 1000px !important;
+}
+
+.\!max-h-\[250px\] {
+  max-height: 250px !important;
+}
+
 .\!max-h-\[501px\] {
   max-height: 501px !important;
+}
+
+.\!max-h-full {
+  max-height: 100% !important;
 }
 
 .max-h-96 {
@@ -1801,10 +1813,6 @@ body {
 
 .tracking-tight {
   letter-spacing: -0.025em;
-}
-
-.tracking-tighter {
-  letter-spacing: -0.05em;
 }
 
 .text-background {

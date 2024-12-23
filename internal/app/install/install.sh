@@ -19,4 +19,5 @@ docker run -d \
     -p 8090:8090 \
     ghcr.io/axzilla/deeploy:$VERSION
 
-echo "✨ Deeploy ($VERSION) is running!"
+IP=$(hostname -I | awk '{print $1}')
+echo "✨ Deeploy ($VERSION) is running on http://$IP:8090"

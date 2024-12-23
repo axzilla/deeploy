@@ -3,14 +3,13 @@ package pages
 import (
 	"github.com/axzilla/templui/pkg/components"
 	"github.com/axzilla/deeploy/internal/web/ui/layouts"
-	"github.com/axzilla/deeploy/internal/web/ui/modules"
 )
 
 templ Landing() {
 	@layouts.BaseLayout() {
 		<div class="h-[calc(100vh-65px)] bg-gradient-to-b from-background to-secondary/10">
 			<div class="container mx-auto px-4">
-				<div class="flex flex-col items-center justify-center h-[calc(100vh-65px)] text-center space-y-8">
+				<div class="flex flex-col items-center justify-center h-[calc(100vh-65px)] space-y-8">
 					<div class="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium animate-pulse">
 						Coming Soon
 					</div>
@@ -19,7 +18,9 @@ templ Landing() {
 						A modern deployment platform. Simple, fast, and developer-friendly.
 					</p>
 					<div class="w-full max-w-lg flex flex-col gap-4">
-						@modules.CodeSnippet(`curl -fsSL https://deeploy.sh/install.sh | sh`, "bash")
+						@components.Code(components.CodeProps{ShowCopyButton: true}) {
+							{ `curl -fsSL https://deeploy.sh/install.sh | sh` }
+						}
 						<p class="text-muted-foreground mx-auto text-xs">Pre-alpha version. Shows coming soon page after installation.</p>
 					</div>
 					<div class="flex flex-col items-center gap-2">

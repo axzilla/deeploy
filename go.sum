@@ -2,10 +2,8 @@ github.com/Oudwins/tailwind-merge-go v0.2.0 h1:rtVHgYmLwwae4P+K6//ceRuUdyz3Bny6f
 github.com/Oudwins/tailwind-merge-go v0.2.0/go.mod h1:kkZodgOPvZQ8f7SIrlWkG/w1g9JTbtnptnePIh3V72U=
 github.com/a-h/templ v0.2.793 h1:Io+/ocnfGWYO4VHdR0zBbf39PQlnzVCVVD+wEEs6/qY=
 github.com/a-h/templ v0.2.793/go.mod h1:lq48JXoUvuQrU0VThrK31yFwdRjTCnIE5bcPCM9IP1w=
-github.com/axzilla/templui v0.26.1 h1:9eIGE06oyvxTTZZCzZ97jZLlL0XSl/ShGkbki9GbVws=
-github.com/axzilla/templui v0.26.1/go.mod h1:PcNr8hOXnpVGdGsSPpXbkbtrLUlx5/Ok8Jv4TGKhN9A=
-github.com/axzilla/templui v0.27.1 h1:v4sokFjlmEwEHizpi5joxJx0e4Rfbg0gcxBDcQt00F4=
-github.com/axzilla/templui v0.27.1/go.mod h1:PcNr8hOXnpVGdGsSPpXbkbtrLUlx5/Ok8Jv4TGKhN9A=
+github.com/axzilla/templui v0.28.0 h1:SMcwmLvXEkfa0+NNMdJlzwyEuhonzNDqPubaO9TcG18=
+github.com/axzilla/templui v0.28.0/go.mod h1:PcNr8hOXnpVGdGsSPpXbkbtrLUlx5/Ok8Jv4TGKhN9A=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
