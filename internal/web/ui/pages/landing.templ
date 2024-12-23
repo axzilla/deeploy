@@ -3,6 +3,7 @@ package pages
 import (
 	"github.com/axzilla/templui/pkg/components"
 	"github.com/axzilla/deeploy/internal/web/ui/layouts"
+	"github.com/axzilla/deeploy/internal/web/ui/modules"
 )
 
 templ Landing() {
@@ -13,10 +14,14 @@ templ Landing() {
 					<div class="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium animate-pulse">
 						Coming Soon
 					</div>
-					<h1 class="text-4xl md:text-6xl font-bold">deeploy.sh</h1>
+					<h1 class="text-4xl md:text-6xl font-bold tracking-tight">deeploy.sh</h1>
 					<p class="text-xl text-muted-foreground max-w-2xl">
 						A modern deployment platform. Simple, fast, and developer-friendly.
 					</p>
+					<div class="w-full max-w-lg flex flex-col gap-4">
+						@modules.CodeSnippet(`curl -fsSL https://deeploy.sh/install.sh | sh`, "bash")
+						<p class="text-muted-foreground mx-auto text-xs">Pre-alpha version. Shows coming soon page after installation.</p>
+					</div>
 					<div class="flex flex-col items-center gap-2">
 						<div class="flex flex-col sm:flex-row gap-4 mt-4">
 							@components.Button(components.ButtonProps{
