@@ -1,6 +1,4 @@
 name: Docker Build
-
-# Defines when the workflow runs
 on:
   push:
     branches:
@@ -8,12 +6,15 @@ on:
       - "feature/*"
     tags:
       - "v*"
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Setup Docker Buildx for Multi-Platform-Support
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       # Login to GitHub Container Registry
       - name: Login to GitHub Container Registry
@@ -35,10 +36,11 @@ jobs:
             # Only set 'latest' tag on main branch releases
             type=raw,value=latest,enable={{is_default_branch}}
 
-      # Build and push the Docker image
+      # Build and push the Docker image with Multi-Platform-Support
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           file: Dockerfile.app
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
