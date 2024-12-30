@@ -2,6 +2,7 @@ package pages
 
 import (
 	"github.com/axzilla/deeploy/internal/app/ui/layouts"
+	"github.com/axzilla/templui/pkg/icons"
 )
 
 templ Dashboard() {
@@ -13,7 +14,8 @@ templ Dashboard() {
 						Coming Soon
 					</div>
 					<h1 class="text-4xl md:text-6xl font-bold">deeploy.sh</h1>
-					<p class="text-xl text-muted-foreground max-w-2xl">
+					<p class="text-xl text-muted-foreground max-w-2xl flex gap-2 items-center justify-center">
+						@icons.CircleCheck(icons.IconProps{Color: "green"})
 						You successfully installed deeploy.sh!
 					</p>
 				</div>
