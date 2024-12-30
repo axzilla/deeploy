@@ -1,23 +1,44 @@
 #!/bin/bash
 
+# Get version from first argument or use 'latest' as default
 VERSION=${1:-latest}
-
 echo "🚀 Installing deeploy version: $VERSION"
 
-# Check if Docker is installed
-if ! command -v docker &> /dev/null; then
-    echo "🐋 Installing Docker..."
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
+# Check if Docker is installed by looking for docker command
+if command -v docker > /dev/null 2>&1; then
+   echo "✅ Docker already installed"
+else
+   # Install Docker using official install script
+   echo "🐋 Installing Docker..."
+   curl -sSL https://get.docker.com | sh
 fi
 
-# Pull and run deeploy with specific version
 echo "📦 Starting deeploy..."
+# Pull specified version of image (will check if update available)
 docker pull ghcr.io/axzilla/deeploy:$VERSION
-docker run -d \
-    --name deeploy \
-    -p 8090:8090 \
-    ghcr.io/axzilla/deeploy:$VERSION
 
-IP=$(hostname -I | awk '{print $1}')
+# Remove existing container if it exists
+# -f forces removal even if running
+# 2>/dev/null hides error if container doesn't exist
+# || true continues even if command fails (no container found)
+docker rm -f deeploy 2>/dev/null || true
+
+# Start new container
+# -d runs in detached (background) mode
+# --name gives container a name for easier management
+# -p maps host port 8090 to container port 8090 
+docker run -d \
+   --name deeploy \
+   -p 8090:8090 \
+   ghcr.io/axzilla/deeploy:$VERSION
+
+# Get IP address for URL display
+# Checks if hostname command exists and -I option works (Linux)
+# Falls back to localhost for macOS/other systems
+if command -v hostname &>/dev/null && hostname -I &>/dev/null; then
+   IP=$(hostname -I | awk '{print $1}')
+else
+   IP="localhost"
+fi
+
 echo "✨ Deeploy ($VERSION) is running on http://$IP:8090"
