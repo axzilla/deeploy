@@ -3,8 +3,8 @@ templ:
 
 server:
 	cd ../.. && air \
-	--build.cmd "go build -o internal/web/tmp/bin/main ./cmd/web/main.go" \
-	--build.bin "internal/web/tmp/bin/main" \
+	--build.cmd "go build -o internal/app/tmp/bin/main ./cmd/app/main.go" \
+	--build.bin "internal/app/tmp/bin/main" \
 	--build.delay "100" \
 	--build.include_ext "go" \
 	--build.stop_on_error "false" \

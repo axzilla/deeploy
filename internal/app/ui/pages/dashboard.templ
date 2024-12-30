@@ -1,0 +1,37 @@
+package pages
+
+import (
+	"github.com/axzilla/deeploy/internal/app/ui/layouts"
+	"github.com/axzilla/templui/pkg/icons"
+)
+
+templ Dashboard() {
+	@layouts.BaseLayout() {
+		<div class="h-[calc(100vh-65px)] bg-gradient-to-b from-background to-secondary/10">
+			<div class="container mx-auto px-4">
+				<div class="flex flex-col items-center justify-center h-[calc(100vh-65px)] text-center space-y-8">
+					<div class="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium animate-pulse">
+						Coming Soon
+					</div>
+					<h1 class="text-4xl md:text-6xl font-bold">deeploy.sh</h1>
+					<p class="text-xl text-muted-foreground max-w-2xl flex gap-2 items-center justify-center">
+						@icons.CircleCheck(icons.IconProps{Color: "green"})
+						You successfully installed deeploy.sh!
+					</p>
+				</div>
+			</div>
+			<div class="fixed bottom-4 left-4 z-50">
+				<div class="flex items-center gap-2 text-sm text-muted-foreground bg-background/80 backdrop-blur-sm p-2 rounded-lg border shadow-sm">
+					<span>Made with</span>
+					<a
+						href="https://templui.io"
+						class="text-foreground hover:text-primary transition-colors"
+						target="_blank"
+					>
+						templUI
+					</a>
+				</div>
+			</div>
+		</div>
+	}
+}
