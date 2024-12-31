@@ -1,4 +1,9 @@
 #!/bin/bash
+# Check if script is running as root by checking user ID
+if [ "$(id -u)" != "0" ]; then   # id -u returns user ID, root is always 0
+   echo "This script must be run as root" >&2   # Print to stderr (error output)
+   exit 1   # Exit with error code 1 (non-zero = error)
+fi
 
 # Get version from first argument or use 'latest' as default
 VERSION=${1:-latest}
