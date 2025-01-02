@@ -13,9 +13,14 @@ import (
 
 func main() {
 	config.LoadConfig()
+
 	mux := http.NewServeMux()
+
 	SetupAssetsRoutes(mux)
 	mux.Handle("GET /", templ.Handler(pages.Dashboard()))
+	mux.Handle("GET /login", templ.Handler(pages.Login()))
+	mux.Handle("GET /register", templ.Handler(pages.Register()))
+
 	fmt.Println("Server is running on http://localhost:8090")
 	http.ListenAndServe(":8090", mux)
 }
