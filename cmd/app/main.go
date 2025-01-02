@@ -5,72 +5,32 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/a-h/templ"
-	"github.com/axzilla/deeploy/internal/app/ui/pages"
+	"github.com/axzilla/deeploy/internal/app/db"
+	"github.com/axzilla/deeploy/internal/app/handler"
 	"github.com/axzilla/deeploy/internal/web/assets"
 	"github.com/axzilla/deeploy/internal/web/config"
 )
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-
-	err := map[string]string{}
-	if email == "" {
-		err["email"] = "Email is required"
-	}
-	if password == "" {
-		err["password"] = "Password is required"
-	}
-
-	formData := map[string]string{
-		"email": email,
-	}
-
-	pages.Login(err, formData).Render(r.Context(), w)
-}
-
-func registerHandler(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	passwordConfirm := r.FormValue("passwordConfirm")
-
-	err := map[string]string{}
-	if email == "" {
-		err["email"] = "Email is required"
-	}
-	if password == "" {
-		err["password"] = "Password is required"
-	}
-	if passwordConfirm == "" {
-		err["passwordConfirm"] = "Confirm your password"
-	}
-	if password != passwordConfirm {
-		err["password"] = "Passwords do not match"
-		err["passwordConfirm"] = "Passwords do not match"
-	}
-
-	formData := map[string]string{
-		"email": email,
-	}
-
-	pages.Register(err, formData).Render(r.Context(), w)
-}
-
 func main() {
 	config.LoadConfig()
+
+	db, err := db.Init()
+	fmt.Println(db)
+	if err != nil {
+		fmt.Println("DB error")
+	}
 
 	mux := http.NewServeMux()
 
 	SetupAssetsRoutes(mux)
 
-	mux.Handle("GET /", templ.Handler(pages.Dashboard()))
+	mux.HandleFunc("GET /", handler.GetLanding)
 
-	mux.Handle("GET /login", templ.Handler(pages.Login(nil, nil)))
-	mux.HandleFunc("POST /login", loginHandler)
+	mux.HandleFunc("GET /login", handler.GetLogin)
+	mux.HandleFunc("POST /login", handler.Login)
 
-	mux.Handle("GET /register", templ.Handler(pages.Register(nil, nil)))
-	mux.HandleFunc("POST /register", registerHandler)
+	mux.HandleFunc("GET /register", handler.GetLogin)
+	mux.HandleFunc("POST /register", handler.Register)
 
 	fmt.Println("Server is running on http://localhost:8090")
 	http.ListenAndServe(":8090", mux)
