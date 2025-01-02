@@ -3,7 +3,7 @@ package pages
 import "github.com/axzilla/deeploy/internal/app/ui/layouts"
 import "github.com/axzilla/templui/pkg/components"
 
-templ Login() {
+templ Login(err, formData map[string]string) {
 	@layouts.BaseLayout() {
 		<div class="flex justify-center items-center">
 			@components.Card(components.CardProps{Class: "max-w-96"}) {
@@ -15,7 +15,7 @@ templ Login() {
 						Sign in to your account
 					}
 				}
-				<form action="/register" method="POST">
+				<form action="/login" method="POST">
 					@components.CardContent() {
 						<div class="space-y-4">
 							@components.FormItem(components.FormItemProps{}) {
@@ -23,18 +23,29 @@ templ Login() {
 									Text: "Email",
 								})
 								@components.Input(components.InputProps{
+									Name:        "email",
 									Type:        "email",
 									Placeholder: "Enter email",
+									HasError:    err["email"] != "",
+									Value:       formData["email"],
 								})
+								if err["email"] != "" {
+									@components.FormMessage(components.FormMessageProps{Type: "error", Message: err["email"]})
+								}
 							}
 							@components.FormItem(components.FormItemProps{}) {
 								@components.FormLabel(components.FormLabelProps{
 									Text: "Password",
 								})
 								@components.Input(components.InputProps{
+									Name:        "password",
 									Type:        "password",
 									Placeholder: "Enter password",
+									HasError:    err["password"] != "",
 								})
+								if err["password"] != "" {
+									@components.FormMessage(components.FormMessageProps{Type: "error", Message: err["password"]})
+								}
 							}
 						</div>
 					}
@@ -42,7 +53,7 @@ templ Login() {
 						<div class="flex flex-col gap-4 w-full">
 							@components.Button(components.ButtonProps{
 								Type: "submit",
-								Text: "Sign Up",
+								Text: "Sign In",
 							})
 							<a href="/register" class="hover:underline hover:underline-offset-4">Don't have an account yet?</a>
 						</div>
