@@ -36,10 +36,6 @@ templ BaseLayout() {
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<!-- Plausible -->
-			if config.AppConfig.GoEnv == "production" {
-				<script defer data-domain="deeploy.sh" src="https://plausible.axeladrian.com/js/script.js"></script>
-			}
 			<!-- Tailwind CSS (output) -->
 			<link href="/assets/css/output.css" rel="stylesheet"/>
 			<!-- Alpine.js CSP-compliant script -->
@@ -48,10 +44,6 @@ templ BaseLayout() {
 			@helpers.ComponentScripts()
 			<!-- Theme switcher script -->
 			@ThemeSwitcherScript()
-			// Highlight.js
-			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/pojoaque.min.css"/>
-			<script nonce={ templ.GetNonce(ctx) } src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-			<script nonce={ templ.GetNonce(ctx) }>hljs.highlightAll();</script>
 			// Preconnect to Google Fonts
 			<link rel="preconnect" href="https://fonts.googleapis.com"/>
 			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>

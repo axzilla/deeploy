@@ -1,9 +1,54 @@
 package pages
 
 import "github.com/axzilla/deeploy/internal/app/ui/layouts"
+import "github.com/axzilla/templui/pkg/components"
 
 templ Login() {
 	@layouts.BaseLayout() {
-		Signin
+		<div class="flex justify-center items-center">
+			@components.Card(components.CardProps{Class: "max-w-96"}) {
+				@components.CardHeader() {
+					@components.CardTitle() {
+						Sign In
+					}
+					@components.CardDescription() {
+						Sign in to your account
+					}
+				}
+				<form action="/register" method="POST">
+					@components.CardContent() {
+						<div class="space-y-4">
+							@components.FormItem(components.FormItemProps{}) {
+								@components.FormLabel(components.FormLabelProps{
+									Text: "Email",
+								})
+								@components.Input(components.InputProps{
+									Type:        "email",
+									Placeholder: "Enter email",
+								})
+							}
+							@components.FormItem(components.FormItemProps{}) {
+								@components.FormLabel(components.FormLabelProps{
+									Text: "Password",
+								})
+								@components.Input(components.InputProps{
+									Type:        "password",
+									Placeholder: "Enter password",
+								})
+							}
+						</div>
+					}
+					@components.CardFooter() {
+						<div class="flex flex-col gap-4 w-full">
+							@components.Button(components.ButtonProps{
+								Type: "submit",
+								Text: "Sign Up",
+							})
+							<a href="/register" class="hover:underline hover:underline-offset-4">Don't have an account yet?</a>
+						</div>
+					}
+				</form>
+			}
+		</div>
 	}
 }
