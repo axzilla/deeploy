@@ -3,14 +3,23 @@ package handler
 import (
 	"net/http"
 
+	"github.com/axzilla/deeploy/internal/app/services"
 	"github.com/axzilla/deeploy/internal/app/ui/pages"
 )
 
-func GetLogin(w http.ResponseWriter, r *http.Request) {
+type AuthHandler struct {
+	service services.AuthServiceInterface
+}
+
+func NewAuthHandler(service *services.AuthService) *AuthHandler {
+	return &AuthHandler{service: service}
+}
+
+func (*AuthHandler) GetLogin(w http.ResponseWriter, r *http.Request) {
 	pages.Login(nil, nil).Render(r.Context(), w)
 }
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func (*AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
@@ -29,11 +38,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	pages.Login(err, formData).Render(r.Context(), w)
 }
 
-func GetRegister(w http.ResponseWriter, r *http.Request) {
+func (*AuthHandler) GetRegister(w http.ResponseWriter, r *http.Request) {
 	pages.Register(nil, nil).Render(r.Context(), w)
 }
 
-func Register(w http.ResponseWriter, r *http.Request) {
+func (*AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 	passwordConfirm := r.FormValue("passwordConfirm")
