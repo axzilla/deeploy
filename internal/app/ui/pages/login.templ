@@ -2,8 +2,9 @@ package pages
 
 import "github.com/axzilla/deeploy/internal/app/ui/layouts"
 import "github.com/axzilla/templui/pkg/components"
+import "github.com/axzilla/deeploy/internal/app/forms"
 
-templ Login(err, formData map[string]string) {
+templ Login(errs forms.LoginErrors, form forms.LoginForm) {
 	@layouts.BaseLayout() {
 		<div class="flex justify-center items-center">
 			@components.Card(components.CardProps{Class: "max-w-96"}) {
@@ -26,11 +27,14 @@ templ Login(err, formData map[string]string) {
 									Name:        "email",
 									Type:        "email",
 									Placeholder: "Enter email",
-									HasError:    err["email"] != "",
-									Value:       formData["email"],
+									HasError:    errs.Email != "",
+									Value:       form.Email,
 								})
-								if err["email"] != "" {
-									@components.FormMessage(components.FormMessageProps{Type: "error", Message: err["email"]})
+								if errs.Email != "" {
+									@components.FormMessage(components.FormMessageProps{
+										Type:    "error",
+										Message: errs.Email,
+									})
 								}
 							}
 							@components.FormItem(components.FormItemProps{}) {
@@ -41,10 +45,13 @@ templ Login(err, formData map[string]string) {
 									Name:        "password",
 									Type:        "password",
 									Placeholder: "Enter password",
-									HasError:    err["password"] != "",
+									HasError:    form.Password != "",
 								})
-								if err["password"] != "" {
-									@components.FormMessage(components.FormMessageProps{Type: "error", Message: err["password"]})
+								if errs.Password != "" {
+									@components.FormMessage(components.FormMessageProps{
+										Type:    "error",
+										Message: errs.Password,
+									})
 								}
 							}
 						</div>
@@ -55,7 +62,9 @@ templ Login(err, formData map[string]string) {
 								Type: "submit",
 								Text: "Sign In",
 							})
-							<a href="/register" class="hover:underline hover:underline-offset-4">Don't have an account yet?</a>
+							<a href="/register" class="hover:underline hover:underline-offset-4">
+								Don't have an account yet?
+							</a>
 						</div>
 					}
 				</form>

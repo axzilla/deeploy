@@ -1,9 +1,11 @@
+
 package pages
 
 import "github.com/axzilla/deeploy/internal/app/ui/layouts"
 import "github.com/axzilla/templui/pkg/components"
+import "github.com/axzilla/deeploy/internal/app/forms"
 
-templ Register(err, formData map[string]string) {
+templ Register(errs forms.RegisterErrors, form forms.RegisterForm) {
 	@layouts.BaseLayout() {
 		<div class="flex justify-center items-center">
 			@components.Card(components.CardProps{Class: "max-w-96"}) {
@@ -26,11 +28,14 @@ templ Register(err, formData map[string]string) {
 									Name:        "email",
 									Type:        "email",
 									Placeholder: "Enter email",
-									HasError:    err["email"] != "",
-									Value:       formData["email"],
+									HasError:    errs.Email != "",
+									Value:       form.Email,
 								})
-								if err["email"] != "" {
-									@components.FormMessage(components.FormMessageProps{Type: "error", Message: err["email"]})
+								if errs.Email != "" {
+									@components.FormMessage(components.FormMessageProps{
+										Type:    "error",
+										Message: errs.Email,
+									})
 								}
 							}
 							@components.FormItem(components.FormItemProps{}) {
@@ -41,10 +46,13 @@ templ Register(err, formData map[string]string) {
 									Name:        "password",
 									Type:        "password",
 									Placeholder: "Enter password",
-									HasError:    err["password"] != "",
+									HasError:    errs.Password != "",
 								})
-								if err["password"] != "" {
-									@components.FormMessage(components.FormMessageProps{Type: "error", Message: err["password"]})
+								if errs.Password!= "" {
+									@components.FormMessage(components.FormMessageProps{
+										Type:    "error",
+										Message: errs.Password,
+									})
 								}
 							}
 							@components.FormItem(components.FormItemProps{}) {
@@ -55,10 +63,13 @@ templ Register(err, formData map[string]string) {
 									Name:        "passwordConfirm",
 									Type:        "password",
 									Placeholder: "Confirm password",
-									HasError:    err["passwordConfirm"] != "",
+									HasError:    errs.PasswordConfirm != "",
 								})
-								if err["passwordConfirm"] != "" {
-									@components.FormMessage(components.FormMessageProps{Type: "error", Message: err["passwordConfirm"]})
+								if errs.PasswordConfirm != "" {
+									@components.FormMessage(components.FormMessageProps{
+										Type:    "error",
+										Message: errs.PasswordConfirm,
+									})
 								}
 							}
 						</div>
@@ -69,7 +80,9 @@ templ Register(err, formData map[string]string) {
 								Type: "submit",
 								Text: "Sign Up",
 							})
-							<a href="/login" class="hover:underline hover:underline-offset-4">Already have an account?</a>
+							<a href="/login" class="hover:underline hover:underline-offset-4">
+								Already have an account?
+							</a>
 						</div>
 					}
 				</form>

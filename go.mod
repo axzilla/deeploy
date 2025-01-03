@@ -6,6 +6,7 @@ require (
 	github.com/a-h/templ v0.3.819
 	github.com/axzilla/templui v0.28.2-0.20250103002306-d95bdc6ff601
 	github.com/golang-migrate/migrate/v4 v4.18.1
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	modernc.org/sqlite v1.34.4
 )
@@ -13,7 +14,6 @@ require (
 require (
 	github.com/Oudwins/tailwind-merge-go v0.2.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect

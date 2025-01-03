@@ -23,7 +23,7 @@ func main() {
 
 	routes.Base(app)
 	routes.Assets(app)
-	routes.Auth(app)
+	routes.User(app)
 
 	fmt.Println("Server is running on http://localhost:8090")
 	http.ListenAndServe(":8090", mux)
