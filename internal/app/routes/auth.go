@@ -14,6 +14,6 @@ func Auth(app deeploy.App) {
 
 	app.Router.HandleFunc("GET /login", authHandler.GetLogin)
 	app.Router.HandleFunc("POST /login", authHandler.Login)
-	app.Router.HandleFunc("GET /register", authHandler.GetLogin)
+	app.Router.HandleFunc("GET /register", authHandler.GetRegister)
 	app.Router.HandleFunc("POST /register", authHandler.Register)
 }
