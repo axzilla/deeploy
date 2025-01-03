@@ -15,7 +15,7 @@ func main() {
 
 	db, err := db.Init()
 	if err != nil {
-		fmt.Println("Error initializing DB")
+		fmt.Printf("DB Error: %s", err)
 	}
 
 	mux := http.NewServeMux()
