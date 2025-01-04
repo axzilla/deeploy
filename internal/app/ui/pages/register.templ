@@ -87,6 +87,15 @@ templ Register(errs forms.RegisterErrors, form forms.RegisterForm) {
 					}
 				</form>
 			}
+			if errs.General != "" {
+				@components.Toast(components.ToastProps{
+					Message:     errs.General,
+					Type:        "error",
+					Icon:        true,
+					Dismissible: true,
+					Duration:    5000,
+				})
+			}
 		</div>
 	}
 }

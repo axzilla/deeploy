@@ -5,6 +5,7 @@ go 1.23.3
 require (
 	github.com/a-h/templ v0.3.819
 	github.com/axzilla/templui v0.28.2-0.20250103002306-d95bdc6ff601
+	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1

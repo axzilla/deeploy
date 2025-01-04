@@ -9,7 +9,9 @@ import (
 )
 
 type Config struct {
-	GoEnv string
+	CookieSecure  bool
+	AssetCaching  bool
+	UseEmbeddedFS bool
 }
 
 var AppConfig *Config
@@ -23,6 +25,8 @@ func LoadConfig() {
 	}
 
 	AppConfig = &Config{
-		GoEnv: os.Getenv("GO_ENV"),
+		CookieSecure:  os.Getenv("GO_ENV") != "dev",
+		AssetCaching:  os.Getenv("GO_ENV") != "dev",
+		UseEmbeddedFS: os.Getenv("GO_ENV") != "dev",
 	}
 }

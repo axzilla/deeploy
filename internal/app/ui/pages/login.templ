@@ -45,7 +45,7 @@ templ Login(errs forms.LoginErrors, form forms.LoginForm) {
 									Name:        "password",
 									Type:        "password",
 									Placeholder: "Enter password",
-									HasError:    form.Password != "",
+									HasError:    errs.Password != "",
 								})
 								if errs.Password != "" {
 									@components.FormMessage(components.FormMessageProps{
@@ -68,6 +68,15 @@ templ Login(errs forms.LoginErrors, form forms.LoginForm) {
 						</div>
 					}
 				</form>
+				if errs.General != "" {
+					@components.Toast(components.ToastProps{
+						Message:     errs.General,
+						Type:        "error",
+						Icon:        true,
+						Dismissible: true,
+						Duration:    5000,
+					})
+				}
 			}
 		</div>
 	}

@@ -9,7 +9,8 @@ import (
 )
 
 type UserServiceInterface interface {
-	CreateUser(form *forms.RegisterForm) error
+	CreateUser(form forms.RegisterForm) (*models.UserDB, error)
+	GetUserByEmail(email string) (*models.UserDB, error)
 }
 
 type UserService struct {
@@ -20,15 +21,23 @@ func NewUserService(repo *repos.UserRepo) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) CreateUser(form *forms.RegisterForm) error {
+func (s *UserService) CreateUser(form forms.RegisterForm) (*models.UserDB, error) {
 	hashedPwd, err := auth.HashPassword(form.Password)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	userDB := models.UserDB{
+	user := &models.UserDB{
 		ID:       uuid.New().String(),
 		Email:    form.Email,
 		Password: hashedPwd,
 	}
-	return s.repo.CreateUser(userDB)
+	err = s.repo.CreateUser(user)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *UserService) GetUserByEmail(email string) (*models.UserDB, error) {
+	return s.repo.GetUserByEmail(email)
 }

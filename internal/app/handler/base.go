@@ -12,6 +12,10 @@ func NewBaseHandler() BaseHandler {
 	return BaseHandler{}
 }
 
-func (*BaseHandler) GetLanding(w http.ResponseWriter, r *http.Request) {
+func (*BaseHandler) DashboardView(w http.ResponseWriter, r *http.Request) {
 	pages.Dashboard().Render(r.Context(), w)
+}
+
+func (*BaseHandler) LandingView(w http.ResponseWriter, r *http.Request) {
+	pages.Landing().Render(r.Context(), w)
 }

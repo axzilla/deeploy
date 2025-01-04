@@ -7,7 +7,8 @@ import (
 )
 
 type UserRepoInterface interface {
-	CreateUser(user models.UserDB) error
+	CreateUser(user *models.UserDB) error
+	GetUserByEmail(email string) (*models.UserDB, error)
 }
 
 type UserRepo struct {
@@ -18,7 +19,7 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 	return &UserRepo{db: db}
 }
 
-func (m *UserRepo) CreateUser(user models.UserDB) error {
+func (m *UserRepo) CreateUser(user *models.UserDB) error {
 	query := `
 		INSERT INTO users (id, email, password)
 		VALUES(?, ?, ?)`
@@ -29,4 +30,26 @@ func (m *UserRepo) CreateUser(user models.UserDB) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepo) GetUserByEmail(email string) (*models.UserDB, error) {
+	user := &models.UserDB{}
+
+	query := `
+		SELECT id, email, password, created_at, updated_at 
+		FROM users
+		WHERE email = ?`
+
+	err := r.db.QueryRow(query, email).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

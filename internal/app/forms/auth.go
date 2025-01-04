@@ -14,6 +14,7 @@ type RegisterErrors struct {
 	Email           string
 	Password        string
 	PasswordConfirm string
+	General         string
 }
 
 func (f *RegisterForm) Validate() RegisterErrors {
@@ -38,7 +39,7 @@ func (f *RegisterForm) Validate() RegisterErrors {
 }
 
 func (e *RegisterErrors) HasErrors() bool {
-	return e.Email != "" || e.Password != "" || e.PasswordConfirm != ""
+	return e.Email != "" || e.Password != "" || e.PasswordConfirm != "" || e.General != ""
 }
 
 type LoginForm struct {
@@ -49,6 +50,7 @@ type LoginForm struct {
 type LoginErrors struct {
 	Email    string
 	Password string
+	General  string
 }
 
 func (f *LoginForm) Validate() LoginErrors {
@@ -66,5 +68,5 @@ func (f *LoginForm) Validate() LoginErrors {
 }
 
 func (e *LoginErrors) HasErrors() bool {
-	return e.Email != "" || e.Password != ""
+	return e.Email != "" || e.Password != "" || e.General != ""
 }
