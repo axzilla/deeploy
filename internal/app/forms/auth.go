@@ -1,5 +1,9 @@
 package forms
 
+import (
+	"github.com/axzilla/deeploy/internal/app/utils"
+)
+
 type RegisterForm struct {
 	Email           string
 	Password        string
@@ -14,6 +18,9 @@ type RegisterErrors struct {
 
 func (f *RegisterForm) Validate() RegisterErrors {
 	var errors RegisterErrors
+	if !utils.IsEmailValid(f.Email) {
+		errors.Email = "Not a valid email"
+	}
 	if f.Email == "" {
 		errors.Email = "Email is required"
 	}
@@ -21,7 +28,7 @@ func (f *RegisterForm) Validate() RegisterErrors {
 		errors.Password = "Password is required"
 	}
 	if f.PasswordConfirm == "" {
-		errors.PasswordConfirm = "Password confirmation is required"
+		errors.PasswordConfirm = "Confirm your password"
 	}
 	if f.Password != f.PasswordConfirm {
 		errors.Password = "Passwords do not match"
@@ -46,6 +53,9 @@ type LoginErrors struct {
 
 func (f *LoginForm) Validate() LoginErrors {
 	var errors LoginErrors
+	if !utils.IsEmailValid(f.Email) {
+		errors.Email = "Not a valid email"
+	}
 	if f.Email == "" {
 		errors.Email = "Email is required"
 	}
