@@ -11,8 +11,13 @@ type UserDB struct {
 }
 
 type UserApp struct {
-	ID         string
-	Email      string
-	CreatedAt  string
-	UpdateddAt string
+	ID    string
+	Email string
+}
+
+func (u *UserDB) ToUserApp() *UserApp {
+	return &UserApp{
+		ID:    u.ID,
+		Email: u.Email,
+	}
 }

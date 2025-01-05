@@ -9,6 +9,7 @@ import (
 type UserRepoInterface interface {
 	CreateUser(user *models.UserDB) error
 	GetUserByEmail(email string) (*models.UserDB, error)
+	GetUserByID(id string) (*models.UserDB, error)
 }
 
 type UserRepo struct {
@@ -47,9 +48,35 @@ func (r *UserRepo) GetUserByEmail(email string) (*models.UserDB, error) {
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-	if err != nil {
-		return nil, err
+	if err == sql.ErrNoRows {
+		return nil, nil // INFO: Like user not found
 	}
+	if err != nil {
+		return nil, err // INFO: real db errors
+	}
+	return user, nil
+}
 
+func (r *UserRepo) GetUserByID(id string) (*models.UserDB, error) {
+	user := &models.UserDB{}
+
+	query := `
+		SELECT id, email, password, created_at, updated_at 
+		FROM users
+		WHERE id = ?`
+
+	err := r.db.QueryRow(query, id).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err == sql.ErrNoRows {
+		return nil, nil // INFO: Like user not found
+	}
+	if err != nil {
+		return nil, err // INFO: real db errors
+	}
 	return user, nil
 }

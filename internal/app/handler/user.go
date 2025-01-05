@@ -4,10 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/axzilla/deeploy/internal/app/auth"
 	"github.com/axzilla/deeploy/internal/app/cookie"
+	"github.com/axzilla/deeploy/internal/app/errs"
 	"github.com/axzilla/deeploy/internal/app/forms"
-	"github.com/axzilla/deeploy/internal/app/jwt"
 	"github.com/axzilla/deeploy/internal/app/services"
 	"github.com/axzilla/deeploy/internal/app/ui/pages"
 )
@@ -29,39 +28,17 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Email:    r.FormValue("email"),
 		Password: r.FormValue("password"),
 	}
-
 	errs := form.Validate()
 	if errs.HasErrors() {
 		pages.Login(errs, form).Render(r.Context(), w)
 		return
 	}
 
-	foundUser, err := h.service.GetUserByEmail(form.Email)
+	token, err := h.service.Login(form.Email, form.Password)
 	if err != nil {
-		log.Printf("Failed to get user: %v", err)
-		errs.General = "Something went wrong. Please try again."
-		pages.Login(errs, form).Render(r.Context(), w)
-		return
-	}
-	if foundUser == nil {
+		log.Printf("Login failed: %v", err)
 		errs.Email = "Email or password incorrect"
 		errs.Password = "Email or password incorrect"
-		pages.Login(errs, form).Render(r.Context(), w)
-		return
-	}
-
-	matched := auth.ComparePassword(foundUser.Password, form.Password)
-	if !matched {
-		errs.Email = "Email or password incorrect"
-		errs.Password = "Email or password incorrect"
-		pages.Login(errs, form).Render(r.Context(), w)
-		return
-	}
-
-	token, err := jwt.CreateToken(foundUser.ID)
-	if err != nil {
-		log.Printf("Failed to create token: %v", err)
-		errs.General = "Something went wrong. Please try again."
 		pages.Login(errs, form).Render(r.Context(), w)
 		return
 	}
@@ -80,36 +57,30 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		Password:        r.FormValue("password"),
 		PasswordConfirm: r.FormValue("passwordConfirm"),
 	}
-
-	errs := form.Validate()
-	if errs.HasErrors() {
-		pages.Register(errs, form).Render(r.Context(), w)
+	formeErrs := form.Validate()
+	if formeErrs.HasErrors() {
+		pages.Register(formeErrs, form).Render(r.Context(), w)
 		return
 	}
 
-	foundUser, err := h.service.GetUserByEmail(form.Email)
-	if foundUser != nil {
-		errs.Email = "Email address is already in use"
-		pages.Register(errs, form).Render(r.Context(), w)
+	token, err := h.service.Register(form)
+	if err == errs.ErrDuplicateEmail {
+		formeErrs.Email = "Email address is already in use"
+		pages.Register(formeErrs, form).Render(r.Context(), w)
 		return
 	}
-
-	user, err := h.service.CreateUser(form)
 	if err != nil {
-		log.Printf("Failed to create user: %v", err)
-		errs.General = "Something went wrong. Please try again."
-		pages.Register(errs, form).Render(r.Context(), w)
-		return
-	}
-
-	token, err := jwt.CreateToken(user.ID)
-	if err != nil {
-		log.Printf("Failed to create token: %v", err)
-		errs.General = "Something went wrong. Please try again."
-		pages.Register(errs, form).Render(r.Context(), w)
+		log.Printf("User creation failed: %v", err)
+		formeErrs.General = "Something went wrong. Please try again."
+		pages.Register(formeErrs, form).Render(r.Context(), w)
 		return
 	}
 
 	cookie.SetCookie(w, token)
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	cookie.ClearCookie(w)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

@@ -1,9 +1,20 @@
 package modules
 
+import "github.com/axzilla/deeploy/internal/app/auth"
+import "github.com/axzilla/templui/pkg/components"
+
 templ Navbar() {
 	<nav class="border-b py-3">
-		<div class="container mx-auto px-4 flex justify-end">
+		<div class="container mx-auto px-4 flex justify-end gap-2">
 			@ThemeSwitcher(ThemeSwitcherProps{})
+			if auth.IsAuthenticated(ctx) {
+				<form action="/logout" method="GET">
+					@components.Button(components.ButtonProps{
+						Variant: components.ButtonVariantSecondary,
+						Text:    "Logout",
+					})
+				</form>
+			}
 		</div>
 	</nav>
 }

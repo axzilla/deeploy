@@ -6,10 +6,19 @@ import (
 
 	"github.com/axzilla/deeploy/internal/app/cookie"
 	"github.com/axzilla/deeploy/internal/app/jwt"
+	"github.com/axzilla/deeploy/internal/app/services"
 	jwtlib "github.com/golang-jwt/jwt/v4"
 )
 
-func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
+type AuthMiddleWare struct {
+	userService services.UserServiceInterface
+}
+
+func NewAuthMiddleware(userService services.UserServiceInterface) *AuthMiddleWare {
+	return &AuthMiddleWare{userService: userService}
+}
+
+func (m *AuthMiddleWare) Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := cookie.GetTokenFromCookie(r)
 		if token == "" {
@@ -21,13 +30,19 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		t, err := jwtlib.ParseWithClaims(token, claims, func(t *jwtlib.Token) (interface{}, error) {
 			return jwt.JwtSecret, nil
 		})
-
 		if err != nil || !t.Valid {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user_id", claims["user_id"])
+		userID := claims["user_id"].(string)
+		user, err := m.userService.GetUserByID(userID)
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "user", user) // Ganzer UserApp
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
