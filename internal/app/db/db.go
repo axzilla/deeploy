@@ -2,13 +2,19 @@ package db
 
 import (
 	"database/sql"
+	"embed"
+	"log"
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "modernc.org/sqlite"
 )
+
+//go:embed migrations/*.sql
+var migrations embed.FS
 
 func Init() (*sql.DB, error) {
 	// Create data directory if it doesn't exist
@@ -40,13 +46,16 @@ func Init() (*sql.DB, error) {
 		return nil, err
 	}
 
-	// Create a new migration instance pointing to our SQL migration files
-	m, err := migrate.New(
-		"file://internal/app/db/migrations",     // Where our migration files are stored
-		"sqlite://internal/app/data/deeploy.db", // Connection string for the database
-	)
+	// Create Migration-Source
+	source, err := iofs.New(migrations, "migrations")
 	if err != nil {
-		return nil, err
+		log.Fatalf("Loading migrations failed: %v", err)
+	}
+
+	// Create Migrations-Object
+	m, err := migrate.NewWithSourceInstance("iofs", source, "sqlite://internal/app/data/deeploy.db")
+	if err != nil {
+		log.Fatalf("Initialize migrations failed: %v", err)
 	}
 
 	// Run all pending migrations
