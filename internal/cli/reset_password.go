@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"flag"
@@ -9,7 +9,7 @@ import (
 	"github.com/axzilla/deeploy/internal/app/db"
 )
 
-func main() {
+func ResetPassword() {
 	email := flag.String("email", "", "User email")
 	password := flag.String("password", "", "New password")
 	flag.Parse()
@@ -23,14 +23,14 @@ func main() {
 	// DB connection
 	db, err := db.Init()
 	if err != nil {
-		fmt.Printf("Initializind DB failed: %v", err)
+		fmt.Printf("Initializind DB failed: %v\n", err)
 		os.Exit(1)
 	}
 
 	// Hash new password
 	hashedPassword, err := auth.HashPassword(*password)
 	if err != nil {
-		fmt.Printf("Hashing password failed: %v", err)
+		fmt.Printf("Hashing password failed: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -38,15 +38,15 @@ func main() {
 	query := `UPDATE users SET password = ? WHERE email = ?`
 	result, err := db.Exec(query, hashedPassword, *email)
 	if err != nil {
-		fmt.Printf("Update password failed: %v", err)
+		fmt.Printf("Update password failed: %v\n", err)
 		os.Exit(1)
 	}
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		fmt.Printf("Update password failed: %v", err)
+		fmt.Printf("Update password failed: %v\n", err)
 	}
 	if rowsAffected == 0 {
-		fmt.Print("No user with this email found")
+		fmt.Println("No user with this email found")
 		os.Exit(1)
 	}
 
