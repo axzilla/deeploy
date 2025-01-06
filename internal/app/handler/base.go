@@ -17,5 +17,6 @@ func (*BaseHandler) DashboardView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*BaseHandler) LandingView(w http.ResponseWriter, r *http.Request) {
-	pages.Landing().Render(r.Context(), w)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	// pages.Landing().Render(r.Context(), w)
 }
