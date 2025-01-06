@@ -9,9 +9,8 @@ import (
 )
 
 type Config struct {
-	CookieSecure  bool
-	AssetCaching  bool
-	UseEmbeddedFS bool
+	CookieSecure bool
+	JWTSecret    string
 }
 
 var AppConfig *Config
@@ -25,8 +24,8 @@ func LoadConfig() {
 	}
 
 	AppConfig = &Config{
-		CookieSecure:  os.Getenv("GO_ENV") != "dev",
-		AssetCaching:  os.Getenv("GO_ENV") != "dev",
-		UseEmbeddedFS: os.Getenv("GO_ENV") != "dev",
+		CookieSecure: os.Getenv("GO_ENV") != "dev",
+		JWTSecret:    os.Getenv("JWT_SECRET"),
 	}
+	fmt.Printf("AUTH: %v", AppConfig)
 }
