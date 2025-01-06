@@ -1,6 +1,6 @@
 *_templ.go
 *_templ.txt
-internal/app/data
+/data
 .DS_Store
 bin
 node_modules
