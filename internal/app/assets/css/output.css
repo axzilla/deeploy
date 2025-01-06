@@ -1073,6 +1073,10 @@ body {
   max-width: 80rem;
 }
 
+.max-w-96 {
+  max-width: 24rem;
+}
+
 .max-w-\[200px\] {
   max-width: 200px;
 }
@@ -1249,6 +1253,10 @@ body {
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
+.grid-rows-\[auto_1fr\] {
+  grid-template-rows: auto 1fr;
+}
+
 .flex-col {
   flex-direction: column;
 }
@@ -1271,10 +1279,6 @@ body {
 
 .justify-start {
   justify-content: flex-start;
-}
-
-.justify-end {
-  justify-content: flex-end;
 }
 
 .justify-center {
@@ -1705,6 +1709,10 @@ body {
 .py-8 {
   padding-top: 2rem;
   padding-bottom: 2rem;
+}
+
+.pb-0 {
+  padding-bottom: 0px;
 }
 
 .pb-4 {
@@ -2298,6 +2306,10 @@ body {
 
 .hover\:underline:hover {
   text-decoration-line: underline;
+}
+
+.hover\:underline-offset-4:hover {
+  text-underline-offset: 4px;
 }
 
 .hover\:opacity-100:hover {

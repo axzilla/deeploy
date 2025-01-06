@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Check if script is running as root by checking user ID
 if [ "$(id -u)" != "0" ]; then   # id -u returns user ID, root is always 0
    echo "This script must be run as root" >&2   # Print to stderr (error output)
@@ -18,6 +19,15 @@ else
    curl -sSL https://get.docker.com | sh
 fi
 
+# Ensure volume exists (create if not present)
+VOLUME_NAME="deeploy_data"
+if ! docker volume inspect $VOLUME_NAME > /dev/null 2>&1; then
+   echo "📂 Creating Docker volume: $VOLUME_NAME"
+   docker volume create $VOLUME_NAME
+else
+   echo "📂 Docker volume $VOLUME_NAME already exists"
+fi
+
 echo "📦 Starting deeploy..."
 # Pull specified version of image (will check if update available)
 docker pull ghcr.io/axzilla/deeploy:$VERSION
@@ -35,6 +45,7 @@ docker rm -f deeploy 2>/dev/null || true
 docker run -d \
    --name deeploy \
    -p 8090:8090 \
+   -v $VOLUME_NAME:/app/data \
    ghcr.io/axzilla/deeploy:$VERSION
 
 # Get IP address for URL display

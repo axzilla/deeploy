@@ -31,22 +31,16 @@ func main() {
 }
 
 func SetupAssetsRoutes(mux *http.ServeMux) {
-	var isDevelopment = os.Getenv("GO_ENV") != "production"
-
+	var isDev = os.Getenv("GO_ENV") != "prod"
 	assetHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if isDevelopment {
-			w.Header().Set("Cache-Control", "no-store")
-		}
-
 		var fs http.Handler
-		if isDevelopment {
-			fs = http.FileServer(http.Dir("./internal/web/assets"))
+		if isDev {
+			w.Header().Set("Cache-Control", "no-store")
+			fs = http.FileServer(http.Dir("./internal/app/assets"))
 		} else {
 			fs = http.FileServer(http.FS(assets.Assets))
 		}
-
 		fs.ServeHTTP(w, r)
 	})
-
 	mux.Handle("GET /assets/", http.StripPrefix("/assets/", assetHandler))
 }
