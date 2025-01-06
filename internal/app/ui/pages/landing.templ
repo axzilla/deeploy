@@ -5,7 +5,7 @@ import (
 	"github.com/axzilla/templui/pkg/icons"
 )
 
-templ Dashboard() {
+templ Landing() {
 	@layouts.BaseLayout() {
 		<div class="h-[calc(100vh-65px)] bg-gradient-to-b from-background to-secondary/10">
 			<div class="container mx-auto px-4">
@@ -16,7 +16,7 @@ templ Dashboard() {
 					<h1 class="text-4xl md:text-6xl font-bold">deeploy.sh</h1>
 					<p class="text-xl text-muted-foreground max-w-2xl flex gap-2 items-center justify-center">
 						@icons.CircleCheck(icons.IconProps{Color: "green"})
-						DASHBOARD
+						You successfully installed deeploy.sh!
 					</p>
 				</div>
 			</div>

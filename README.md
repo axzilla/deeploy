@@ -21,3 +21,9 @@ This is a pre-alpha release focused on core installation functionality. The plat
 
 - Linux server (tested on Ubuntu 24.04)
 - Docker
+
+## Reset Password
+
+1. Login into your VPS
+2. `docker exec -it deeploy sh`
+3. `./cli reset-password -email=user@example.com -password=newpassword`
