@@ -24,7 +24,8 @@ func LoadConfig() {
 	}
 
 	AppConfig = &Config{
-		CookieSecure: os.Getenv("GO_ENV") != "dev",
+		// CookieSecure: os.Getenv("GO_ENV") != "dev",
+		CookieSecure: false, // INFO: false for now because to many http/https cookie related issues (e.g login) while testing
 		JWTSecret:    os.Getenv("JWT_SECRET"),
 	}
 }
