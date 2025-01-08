@@ -9,7 +9,8 @@ import (
 )
 
 type Config struct {
-	GoEnv string
+	CookieSecure bool
+	JWTSecret    string
 }
 
 var AppConfig *Config
@@ -23,6 +24,8 @@ func LoadConfig() {
 	}
 
 	AppConfig = &Config{
-		GoEnv: os.Getenv("GO_ENV"),
+		// CookieSecure: os.Getenv("GO_ENV") != "dev",
+		CookieSecure: false, // INFO: false for now because to many http/https cookie related issues (e.g login) while testing
+		JWTSecret:    os.Getenv("JWT_SECRET"),
 	}
 }

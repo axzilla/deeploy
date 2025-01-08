@@ -17,9 +17,9 @@ templ Landing() {
 					<p class="text-xl text-muted-foreground max-w-2xl">
 						A modern deployment platform. Simple, fast, and developer-friendly.
 					</p>
-					<div class="w-full max-w-lg flex flex-col gap-4">
+					<div class="w-full max-w-md flex flex-col gap-4">
 						@components.Code(components.CodeProps{ShowCopyButton: true}) {
-							{ `curl -fsSL https://deeploy.sh/install.sh | sh` }
+							{ `curl -fsSL https://deeploy.sh/install.sh | bash` }
 						}
 						<p class="text-muted-foreground mx-auto text-xs">Pre-alpha version. Shows coming soon page after installation.</p>
 					</div>

@@ -1,0 +1,101 @@
+
+package pages
+
+import "github.com/axzilla/deeploy/internal/app/ui/layouts"
+import "github.com/axzilla/templui/pkg/components"
+import "github.com/axzilla/deeploy/internal/app/forms"
+
+templ Register(errs forms.RegisterErrors, form forms.RegisterForm) {
+	@layouts.BaseLayout() {
+		<div class="flex justify-center items-center">
+			@components.Card(components.CardProps{Class: "max-w-96"}) {
+				@components.CardHeader() {
+					@components.CardTitle() {
+						Sign Up
+					}
+					@components.CardDescription() {
+						Sign up to access all the features
+					}
+				}
+				<form action="/register" method="POST">
+					@components.CardContent() {
+						<div class="space-y-4">
+							@components.FormItem(components.FormItemProps{}) {
+								@components.FormLabel(components.FormLabelProps{
+									Text: "Email",
+								})
+								@components.Input(components.InputProps{
+									Name:        "email",
+									Type:        "email",
+									Placeholder: "Enter email",
+									HasError:    errs.Email != "",
+									Value:       form.Email,
+								})
+								if errs.Email != "" {
+									@components.FormMessage(components.FormMessageProps{
+										Type:    "error",
+										Message: errs.Email,
+									})
+								}
+							}
+							@components.FormItem(components.FormItemProps{}) {
+								@components.FormLabel(components.FormLabelProps{
+									Text: "Password",
+								})
+								@components.Input(components.InputProps{
+									Name:        "password",
+									Type:        "password",
+									Placeholder: "Enter password",
+									HasError:    errs.Password != "",
+								})
+								if errs.Password!= "" {
+									@components.FormMessage(components.FormMessageProps{
+										Type:    "error",
+										Message: errs.Password,
+									})
+								}
+							}
+							@components.FormItem(components.FormItemProps{}) {
+								@components.FormLabel(components.FormLabelProps{
+									Text: "Confirm Password",
+								})
+								@components.Input(components.InputProps{
+									Name:        "passwordConfirm",
+									Type:        "password",
+									Placeholder: "Confirm password",
+									HasError:    errs.PasswordConfirm != "",
+								})
+								if errs.PasswordConfirm != "" {
+									@components.FormMessage(components.FormMessageProps{
+										Type:    "error",
+										Message: errs.PasswordConfirm,
+									})
+								}
+							}
+						</div>
+					}
+					@components.CardFooter() {
+						<div class="flex flex-col gap-4 w-full">
+							@components.Button(components.ButtonProps{
+								Type: "submit",
+								Text: "Sign Up",
+							})
+							<a href="/login" class="hover:underline hover:underline-offset-4">
+								Already have an account?
+							</a>
+						</div>
+					}
+				</form>
+			}
+			if errs.General != "" {
+				@components.Toast(components.ToastProps{
+					Message:     errs.General,
+					Type:        "error",
+					Icon:        true,
+					Dismissible: true,
+					Duration:    5000,
+				})
+			}
+		</div>
+	}
+}
