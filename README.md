@@ -43,7 +43,14 @@ deeploy logs myapp
 deeploy status
 ```
 
-## Status
+## Inspiration
+
+Deeploy draws inspiration from popular open source deployment platforms:
+
+- [Coolify](https://coolify.io)
+- [Dokploy](https://dokploy.com)
+
+## Current Status
 
 This is a pre-alpha release. The platform is under active development with upcoming features including:
 
