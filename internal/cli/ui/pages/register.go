@@ -59,11 +59,11 @@ func (m RegisterModel) Init() tea.Cmd {
 func (m RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "esc":
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 
-		case "tab":
+		case tea.KeyTab, tea.KeyDown:
 			m.resetErrs()
 
 			// Move to the next input
@@ -74,7 +74,7 @@ func (m RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.updateFocus()
 			return m, nil
 
-		case "shift+tab":
+		case tea.KeyShiftTab, tea.KeyUp:
 			m.resetErrs()
 
 			// Move to the previous input
@@ -85,29 +85,7 @@ func (m RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.updateFocus()
 			return m, nil
 
-		case "up":
-			m.resetErrs()
-
-			// Move to the previous input
-			m.focusIndex--
-			if m.focusIndex < 0 {
-				m.focusIndex = registersteps
-			}
-			m.updateFocus()
-			return m, nil
-
-		case "down":
-			m.resetErrs()
-
-			// Move to the next input
-			m.focusIndex++
-			if m.focusIndex > registersteps {
-				m.focusIndex = 0
-			}
-			m.updateFocus()
-			return m, nil
-
-		case "enter":
+		case tea.KeyEnter:
 			m.resetErrs()
 
 			if m.focusIndex == registersteps { // Submit button
