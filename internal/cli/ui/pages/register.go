@@ -1,11 +1,9 @@
 package ui
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 
-	"github.com/axzilla/deeploy/internal/cli/forms"
+	"github.com/axzilla/deeploy/internal/app/utils"
 	"github.com/axzilla/deeploy/internal/cli/ui/styles"
 	"github.com/axzilla/deeploy/internal/cli/viewtypes"
 	"github.com/charmbracelet/bubbles/cursor"
@@ -13,42 +11,51 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var (
-	registersteps = 3
+const (
+	RegisterFormEmail = iota
+	RegisterFormPassword
+	RegisterFormPasswordConfirm
 )
+
+type RegisterField struct {
+	input textinput.Model
+	label string
+}
 
 type RegisterModel struct {
 	focusIndex int
 	cursorMode cursor.Mode
-	form       forms.RegisterForm
-	errs       forms.RegisterErrors
+	form       []RegisterField
+	errs       map[int]string
 }
 
 func NewRegister() RegisterModel {
 	m := RegisterModel{
-		form: forms.RegisterForm{
-			Email:           textinput.New(),
-			Password:        textinput.New(),
-			PasswordConfirm: textinput.New(),
-		},
+		form: make([]RegisterField, 3),
+		errs: make(map[int]string),
 	}
-
-	// Email input
-	m.form.Email.Placeholder = "Email"
-	m.form.Email.Focus()
-	m.form.Email.PromptStyle = styles.FocusedStyle
-	m.form.Email.TextStyle = styles.FocusedStyle
-
-	// Password input
-	m.form.Password.Placeholder = "Password"
-	m.form.Password.EchoMode = textinput.EchoPassword
-	m.form.Password.EchoCharacter = '•'
-
-	// Confirm password input
-	m.form.PasswordConfirm.Placeholder = "Confirm Password"
-	m.form.PasswordConfirm.EchoMode = textinput.EchoPassword
-	m.form.PasswordConfirm.EchoCharacter = '•'
-
+	for i := range m.form {
+		t := textinput.New()
+		switch i {
+		case RegisterFormEmail:
+			// m.form[i].label = styles.LabelStyle.Render("email")
+			t.Placeholder = "email"
+			t.Focus()
+			t.PromptStyle = styles.FocusedStyle
+			t.TextStyle = styles.FocusedStyle
+		case RegisterFormPassword:
+			// m.form[i].label = styles.LabelStyle.Render("password")
+			t.Placeholder = "password"
+			t.EchoMode = textinput.EchoPassword
+			t.EchoCharacter = '•'
+		case RegisterFormPasswordConfirm:
+			// m.form[i].label = styles.LabelStyle.Render("confirm password")
+			t.Placeholder = "confirm password"
+			t.EchoMode = textinput.EchoPassword
+			t.EchoCharacter = '•'
+		}
+		m.form[i].input = t
+	}
 	return m
 }
 
@@ -64,46 +71,25 @@ func (m RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case tea.KeyTab, tea.KeyDown:
-			m.resetErrs()
-
-			// Move to the next input
-			m.focusIndex++
-			if m.focusIndex > registersteps {
-				m.focusIndex = -1
-			}
-			m.updateFocus()
+			m.nextInput()
 			return m, nil
 
 		case tea.KeyShiftTab, tea.KeyUp:
-			m.resetErrs()
-
-			// Move to the previous input
-			m.focusIndex--
-			if m.focusIndex < 0 {
-				m.focusIndex = registersteps
-			}
-			m.updateFocus()
+			m.prevInput()
 			return m, nil
 
 		case tea.KeyEnter:
 			m.resetErrs()
 
-			if m.focusIndex == registersteps { // Submit button
-				m.errs = m.form.Validate()
-
-				if !m.errs.HasErrors() {
-					fmt.Println("Form submitted successfully!")
+			if m.focusIndex == len(m.form) { // Submit button
+				m.validate()
+				if len(m.errs) == 0 {
 					cmd := func() tea.Msg { return viewtypes.Dashboard }
 					return m, cmd
 					// return m, tea.Quit
 				}
 			} else {
-				// Move to the next input
-				m.focusIndex++
-				if m.focusIndex > registersteps {
-					m.focusIndex = 0
-				}
-				m.updateFocus()
+				m.nextInput()
 				return m, nil
 			}
 		}
@@ -112,81 +98,94 @@ func (m RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Update the currently focused input field
 	var cmd tea.Cmd
 	switch m.focusIndex {
-	case 0:
-		m.form.Email, cmd = m.form.Email.Update(msg)
-	case 1:
-		m.form.Password, cmd = m.form.Password.Update(msg)
-	case 2:
-		m.form.PasswordConfirm, cmd = m.form.PasswordConfirm.Update(msg)
+	case RegisterFormEmail:
+		m.form[RegisterFormEmail].input, cmd = m.form[RegisterFormEmail].input.Update(msg)
+	case RegisterFormPassword:
+		m.form[RegisterFormPassword].input, cmd = m.form[RegisterFormPassword].input.Update(msg)
+	case RegisterFormPasswordConfirm:
+		m.form[RegisterFormPasswordConfirm].input, cmd = m.form[RegisterFormPasswordConfirm].input.Update(msg)
 	}
 
 	return m, cmd
 }
 
+func (m *RegisterModel) nextInput() {
+	m.focusIndex++
+	if m.focusIndex > len(m.form) {
+		m.focusIndex = 0
+	}
+	m.updateFocus()
+	m.resetErrs()
+}
+
+func (m *RegisterModel) prevInput() {
+	m.focusIndex--
+	if m.focusIndex < 0 {
+		m.focusIndex = len(m.form)
+	}
+	m.updateFocus()
+	m.resetErrs()
+}
+
 func (m *RegisterModel) updateFocus() {
-	// Reset focus and styles
-	m.form.Email.Blur()
-	m.form.Email.PromptStyle = styles.NoStyle
-	m.form.Email.TextStyle = styles.NoStyle
+	for i := range m.form {
+		if i == m.focusIndex {
+			m.form[i].input.Focus()
+			m.form[i].input.PromptStyle = styles.FocusedStyle
+			m.form[i].input.TextStyle = styles.FocusedStyle
 
-	m.form.Password.Blur()
-	m.form.Password.PromptStyle = styles.NoStyle
-	m.form.Password.TextStyle = styles.NoStyle
+		} else {
+			m.form[i].input.Blur()
+			m.form[i].input.PromptStyle = styles.NoStyle
+			m.form[i].input.TextStyle = styles.NoStyle
+		}
+	}
+}
 
-	m.form.PasswordConfirm.Blur()
-	m.form.PasswordConfirm.PromptStyle = styles.NoStyle
-	m.form.PasswordConfirm.TextStyle = styles.NoStyle
-
-	// Set focus abd styles bases on current index
-	switch m.focusIndex {
-	case 0:
-		m.form.Email.Focus()
-		m.form.Email.PromptStyle = styles.FocusedStyle
-		m.form.Email.TextStyle = styles.FocusedStyle
-	case 1:
-		m.form.Password.Focus()
-		m.form.Password.PromptStyle = styles.FocusedStyle
-		m.form.Password.TextStyle = styles.FocusedStyle
-	case 2:
-		m.form.PasswordConfirm.Focus()
-		m.form.PasswordConfirm.PromptStyle = styles.FocusedStyle
-		m.form.PasswordConfirm.TextStyle = styles.FocusedStyle
+func (m *RegisterModel) validate() {
+	if !utils.IsEmailValid(m.form[RegisterFormEmail].input.Value()) {
+		m.errs[RegisterFormEmail] = "not a valid email"
 	}
 
+	if m.form[RegisterFormEmail].input.Value() == "" {
+		m.errs[RegisterFormEmail] = "email is required"
+	}
+
+	if m.form[RegisterFormPassword].input.Value() == "" {
+		m.errs[RegisterFormPassword] = "password is required"
+	}
+
+	if m.form[RegisterFormPassword].input.Value() != m.form[RegisterFormPasswordConfirm].input.Value() {
+		m.errs[RegisterFormPassword] = "passwords do not match"
+	}
 }
 
 func (m *RegisterModel) resetErrs() {
-	m.errs = forms.RegisterErrors{}
+	m.errs = make(map[int]string)
 }
 
 func (m RegisterModel) View() string {
 	var b strings.Builder
 
-	b.WriteString("\n" + strconv.Itoa(m.focusIndex) + "\n")
-
 	b.WriteString("\nREGISTER\n\n")
 
-	// Render Email input
-	b.WriteString(m.form.Email.View() + "\n")
-
-	// Render Password input
-	b.WriteString(m.form.Password.View() + "\n")
-
-	// Render Confirm Password input
-	b.WriteString(m.form.PasswordConfirm.View() + "\n")
-	if m.errs.Email != "" {
-		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("* %s", m.errs.Email)) + "\n")
-	}
-	if m.errs.Password != "" {
-		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("* %s", m.errs.Password)) + "\n")
-	}
-	if m.errs.PasswordConfirm != "" {
-		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("* %s", m.errs.PasswordConfirm)) + "\n")
+	for _, field := range m.form {
+		// b.WriteString(field.label + "\n")
+		b.WriteString(field.input.View() + "\n")
 	}
 
-	// Render Submit button
+	if err, ok := m.errs[RegisterFormEmail]; ok {
+		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
+	}
+	if err, ok := m.errs[RegisterFormPassword]; ok {
+		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
+	}
+	if err, ok := m.errs[RegisterFormPasswordConfirm]; ok {
+		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
+	}
+
 	button := styles.BlurredButton
-	if m.focusIndex == registersteps {
+	if m.focusIndex == len(m.form) {
 		button = styles.FocusedButton
 	}
 	b.WriteString("\n" + button + "\n")
