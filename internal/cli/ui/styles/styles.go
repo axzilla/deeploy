@@ -16,6 +16,11 @@ var (
 	ErrorStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
 	LabelStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 
+	AuthCard = lipgloss.NewStyle().
+			Width(35).
+			Padding(1, 2).
+			Border(lipgloss.RoundedBorder())
+
 	FocusedButton = FocusedStyle.Render("[ Submit ]")
 	BlurredButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Submit"))
 )

@@ -9,12 +9,14 @@ type AppModel struct {
 	currentView viewtypes.View
 	register    RegisterModel
 	login       LoginModel
+	width       int
+	height      int
 }
 
 func NewApp() *AppModel {
 	return &AppModel{
-		login:    NewLogin(),
-		register: NewRegister(),
+		login:    NewLogin(0, 0),
+		register: NewRegister(0, 0),
 	}
 }
 
@@ -25,14 +27,17 @@ func (m *AppModel) Init() tea.Cmd {
 
 func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	case viewtypes.View:
 		switch msg {
 		case viewtypes.Login:
-			m.login = NewLogin()
+			m.login = NewLogin(m.width, m.height)
 			m.currentView = viewtypes.Login
 			return m, m.login.Init()
 		case viewtypes.Register:
-			m.register = NewRegister()
+			m.register = NewRegister(m.width, m.height)
 			m.currentView = viewtypes.Register
 			return m, m.register.Init()
 		case viewtypes.Dashboard:

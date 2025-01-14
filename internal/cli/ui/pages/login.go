@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -28,12 +29,16 @@ type LoginModel struct {
 	cursorMode cursor.Mode
 	fields     []LoginField
 	errs       map[int]string
+	width      int
+	height     int
 }
 
-func NewLogin() LoginModel {
+func NewLogin(w, h int) LoginModel {
 	m := LoginModel{
 		fields: make([]LoginField, 2),
 		errs:   make(map[int]string),
+		width:  w,
+		height: h,
 	}
 	for i := range m.fields {
 		t := textinput.New()
@@ -61,6 +66,9 @@ func (m LoginModel) Init() tea.Cmd {
 
 func (m LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -186,5 +194,6 @@ func (m LoginModel) View() string {
 	}
 	b.WriteString("\n" + loginText + "\n")
 
-	return b.String()
+	card := styles.AuthCard.Render(b.String())
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, card)
 }

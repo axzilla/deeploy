@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -29,12 +30,16 @@ type RegisterModel struct {
 	cursorMode cursor.Mode
 	fields     []RegisterField
 	errs       map[int]string
+	width      int
+	height     int
 }
 
-func NewRegister() RegisterModel {
+func NewRegister(w, h int) RegisterModel {
 	m := RegisterModel{
 		fields: make([]RegisterField, 3),
 		errs:   make(map[int]string),
+		width:  w,
+		height: h,
 	}
 	for i := range m.fields {
 		t := textinput.New()
@@ -67,6 +72,9 @@ func (m RegisterModel) Init() tea.Cmd {
 
 func (m RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -201,5 +209,6 @@ func (m RegisterModel) View() string {
 	}
 	b.WriteString("\n" + loginText + "\n")
 
-	return b.String()
+	card := styles.AuthCard.Render(b.String())
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, card)
 }
