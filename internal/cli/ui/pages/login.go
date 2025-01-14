@@ -1,10 +1,9 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
 
-	"github.com/axzilla/deeploy/internal/cli/forms"
+	"github.com/axzilla/deeploy/internal/app/utils"
 	"github.com/axzilla/deeploy/internal/cli/ui/styles"
 	"github.com/axzilla/deeploy/internal/cli/viewtypes"
 	"github.com/charmbracelet/bubbles/cursor"
@@ -12,32 +11,47 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+const (
+	LoginFormEmail = iota
+	LoginFormPassword
+	LoginFormSubmit
+	LoginFormLoginLink
+)
+
+type LoginField struct {
+	input textinput.Model
+	label string
+}
+
 type LoginModel struct {
 	focusIndex int
 	cursorMode cursor.Mode
-	form       forms.LoginForm
-	errs       forms.LoginErrors
+	fields     []LoginField
+	errs       map[int]string
 }
 
 func NewLogin() LoginModel {
 	m := LoginModel{
-		form: forms.LoginForm{
-			Email:    textinput.New(),
-			Password: textinput.New(),
-		},
+		fields: make([]LoginField, 2),
+		errs:   make(map[int]string),
 	}
-
-	// Email input
-	m.form.Email.Placeholder = "Email"
-	m.form.Email.Focus()
-	m.form.Email.PromptStyle = styles.FocusedStyle
-	m.form.Email.TextStyle = styles.FocusedStyle
-
-	// Password input
-	m.form.Password.Placeholder = "Password"
-	m.form.Password.EchoMode = textinput.EchoPassword
-	m.form.Password.EchoCharacter = '•'
-
+	for i := range m.fields {
+		t := textinput.New()
+		switch i {
+		case LoginFormEmail:
+			// m.form[i].label = styles.LabelStyle.Render("email")
+			t.Placeholder = "email"
+			t.Focus()
+			t.PromptStyle = styles.FocusedStyle
+			t.TextStyle = styles.FocusedStyle
+		case LoginFormPassword:
+			// m.form[i].label = styles.LabelStyle.Render("password")
+			t.Placeholder = "password"
+			t.EchoMode = textinput.EchoPassword
+			t.EchoCharacter = '•'
+		}
+		m.fields[i].input = t
+	}
 	return m
 }
 
@@ -48,74 +62,29 @@ func (m LoginModel) Init() tea.Cmd {
 func (m LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "esc":
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 
-		case "tab":
-			m.resetErrs()
-
-			// Move to the next input
-			m.focusIndex++
-			if m.focusIndex > 3 {
-				m.focusIndex = -1
-			}
-			m.updateFocus()
+		case tea.KeyTab, tea.KeyDown:
+			m.nextInput()
 			return m, nil
 
-		case "shift+tab":
-			m.resetErrs()
-
-			// Move to the previous input
-			m.focusIndex--
-			if m.focusIndex < 0 {
-				m.focusIndex = 3
-			}
-			m.updateFocus()
+		case tea.KeyShiftTab, tea.KeyUp:
+			m.prevInput()
 			return m, nil
 
-		case "up":
+		case tea.KeyEnter:
 			m.resetErrs()
-
-			// Move to the previous input
-			m.focusIndex--
-			if m.focusIndex < 0 {
-				m.focusIndex = 3
-			}
-			m.updateFocus()
-			return m, nil
-
-		case "down":
-			m.resetErrs()
-
-			// Move to the next input
-			m.focusIndex++
-			if m.focusIndex > 3 {
-				m.focusIndex = 0
-			}
-			m.updateFocus()
-			return m, nil
-
-		case "enter":
-			m.resetErrs()
-
-			if m.focusIndex == 3 { // Submit button
-				m.errs = m.form.Validate()
-
-				if !m.errs.HasErrors() {
-					fmt.Println("Form submitted successfully!")
-					cmd := func() tea.Msg { return viewtypes.Dashboard }
-					return m, cmd
-					// return m, tea.Quit
+			if m.focusIndex == LoginFormSubmit { // Submit
+				m.validate()
+				if len(m.errs) == 0 {
+					return m, func() tea.Msg { return viewtypes.Dashboard }
 				}
+			} else if m.focusIndex == LoginFormLoginLink { // Login Link
+				return m, func() tea.Msg { return viewtypes.Register }
 			} else {
-				// Move to the next input
-				m.focusIndex++
-				if m.focusIndex > 3 {
-					m.focusIndex = 0
-				}
-				m.updateFocus()
-				return m, nil
+				m.nextInput()
 			}
 		}
 	}
@@ -123,66 +92,99 @@ func (m LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Update the currently focused input field
 	var cmd tea.Cmd
 	switch m.focusIndex {
-	case 0:
-		m.form.Email, cmd = m.form.Email.Update(msg)
-	case 1:
-		m.form.Password, cmd = m.form.Password.Update(msg)
+	case LoginFormEmail:
+		m.fields[LoginFormEmail].input, cmd = m.fields[LoginFormEmail].input.Update(msg)
+	case LoginFormPassword:
+		m.fields[LoginFormPassword].input, cmd = m.fields[LoginFormPassword].input.Update(msg)
 	}
 
 	return m, cmd
 }
 
+func (m *LoginModel) nextInput() {
+	m.focusIndex++
+	if m.focusIndex > LoginFormLoginLink {
+		m.focusIndex = 0
+	}
+	m.updateFocus()
+	m.resetErrs()
+}
+
+func (m *LoginModel) prevInput() {
+	m.focusIndex--
+	if m.focusIndex < 0 {
+		m.focusIndex = LoginFormLoginLink
+	}
+	m.updateFocus()
+	m.resetErrs()
+}
+
 func (m *LoginModel) updateFocus() {
-	// Reset focus and styles
-	m.form.Email.Blur()
-	m.form.Email.PromptStyle = styles.NoStyle
-	m.form.Email.TextStyle = styles.NoStyle
+	for i := range m.fields {
+		if i == m.focusIndex {
+			m.fields[i].input.Focus()
+			m.fields[i].input.PromptStyle = styles.FocusedStyle
+			m.fields[i].input.TextStyle = styles.FocusedStyle
 
-	m.form.Password.Blur()
-	m.form.Password.PromptStyle = styles.NoStyle
-	m.form.Password.TextStyle = styles.NoStyle
+		} else {
+			m.fields[i].input.Blur()
+			m.fields[i].input.PromptStyle = styles.NoStyle
+			m.fields[i].input.TextStyle = styles.NoStyle
+		}
+	}
+}
 
-	// Set focus abd styles bases on current index
-	switch m.focusIndex {
-	case 0:
-		m.form.Email.Focus()
-		m.form.Email.PromptStyle = styles.FocusedStyle
-		m.form.Email.TextStyle = styles.FocusedStyle
-	case 1:
-		m.form.Password.Focus()
-		m.form.Password.PromptStyle = styles.FocusedStyle
-		m.form.Password.TextStyle = styles.FocusedStyle
+func (m *LoginModel) validate() {
+	if !utils.IsEmailValid(m.fields[LoginFormEmail].input.Value()) {
+		m.errs[LoginFormEmail] = "not a valid email"
+	}
+
+	if m.fields[LoginFormEmail].input.Value() == "" {
+		m.errs[LoginFormEmail] = "email is required"
+	}
+
+	if m.fields[LoginFormPassword].input.Value() == "" {
+		m.errs[LoginFormPassword] = "password is required"
 	}
 }
 
 func (m *LoginModel) resetErrs() {
-	m.errs = forms.LoginErrors{}
+	m.errs = make(map[int]string)
 }
 
 func (m LoginModel) View() string {
 	var b strings.Builder
 
-	b.WriteString("\nREGISTER\n\n")
+	b.WriteString("\nLOGIN\n\n")
 
-	// Render Email input
-	b.WriteString(m.form.Email.View() + "\n")
-
-	// Render Password input
-	b.WriteString(m.form.Password.View() + "\n")
-
-	if m.errs.Email != "" {
-		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Error: %s", m.errs.Email)) + "\n")
-	}
-	if m.errs.Password != "" {
-		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Error: %s", m.errs.Password)) + "\n")
+	for _, field := range m.fields {
+		// b.WriteString(field.label + "\n")
+		b.WriteString(field.input.View() + "\n")
 	}
 
-	// Render Submit button
+	if len(m.errs) > 0 {
+		b.WriteString("\n")
+	}
+	if err, ok := m.errs[LoginFormEmail]; ok {
+		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
+	}
+	if err, ok := m.errs[LoginFormPassword]; ok {
+		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
+	}
+
+	// Submit Button
 	button := styles.BlurredButton
-	if m.focusIndex == 3 {
+	if m.focusIndex == LoginFormSubmit {
 		button = styles.FocusedButton
 	}
 	b.WriteString("\n" + button + "\n")
+
+	// Login Link
+	loginText := "Don't have an account yet?"
+	if m.focusIndex == LoginFormLoginLink {
+		loginText = styles.FocusedStyle.Render(loginText)
+	}
+	b.WriteString("\n" + loginText + "\n")
 
 	return b.String()
 }

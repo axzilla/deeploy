@@ -8,20 +8,19 @@ import (
 type AppModel struct {
 	currentView viewtypes.View
 	register    RegisterModel
+	login       LoginModel
 }
 
 func NewApp() *AppModel {
 	return &AppModel{
+		login:    NewLogin(),
 		register: NewRegister(),
 	}
 }
 
 func (m *AppModel) Init() tea.Cmd {
 	m.currentView = viewtypes.Register
-
-	return tea.Batch(
-		m.register.Init(),
-	)
+	return m.register.Init()
 }
 
 func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -29,11 +28,16 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case viewtypes.View:
 		switch msg {
 		case viewtypes.Login:
+			m.login = NewLogin()
 			m.currentView = viewtypes.Login
+			return m, m.login.Init()
 		case viewtypes.Register:
+			m.register = NewRegister()
 			m.currentView = viewtypes.Register
+			return m, m.register.Init()
 		case viewtypes.Dashboard:
 			m.currentView = viewtypes.Dashboard
+			return m, nil
 		}
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -45,8 +49,16 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Send updates to "children"
 	if m.currentView == viewtypes.Register {
 		model, cmd := m.register.Update(msg)
-		if reg, ok := model.(RegisterModel); ok {
-			m.register = reg
+		if register, ok := model.(RegisterModel); ok {
+			m.register = register
+		}
+		return m, cmd
+	}
+
+	if m.currentView == viewtypes.Login {
+		model, cmd := m.login.Update(msg)
+		if login, ok := model.(LoginModel); ok {
+			m.login = login
 		}
 		return m, cmd
 	}
@@ -58,7 +70,7 @@ func (m *AppModel) View() string {
 	case viewtypes.Register:
 		return m.register.View()
 	case viewtypes.Login:
-		return "Login View"
+		return m.login.View()
 	case viewtypes.Dashboard:
 		return "Dashboard View"
 	}
