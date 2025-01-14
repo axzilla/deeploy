@@ -16,7 +16,7 @@ const (
 	LoginFormEmail = iota
 	LoginFormPassword
 	LoginFormSubmit
-	LoginFormLoginLink
+	LoginFormRegisterLink
 )
 
 type LoginField struct {
@@ -44,14 +44,14 @@ func NewLogin(w, h int) LoginModel {
 		t := textinput.New()
 		switch i {
 		case LoginFormEmail:
-			// m.form[i].label = styles.LabelStyle.Render("email")
-			t.Placeholder = "email"
+			m.fields[i].label = "Email"
+			t.Placeholder = "your@email.com"
 			t.Focus()
 			t.PromptStyle = styles.FocusedStyle
 			t.TextStyle = styles.FocusedStyle
 		case LoginFormPassword:
-			// m.form[i].label = styles.LabelStyle.Render("password")
-			t.Placeholder = "password"
+			m.fields[i].label = "Password"
+			t.Placeholder = "enter password"
 			t.EchoMode = textinput.EchoPassword
 			t.EchoCharacter = '•'
 		}
@@ -76,11 +76,11 @@ func (m LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyTab, tea.KeyDown:
 			m.nextInput()
-			return m, nil
+			return m, tea.Batch(textinput.Blink)
 
 		case tea.KeyShiftTab, tea.KeyUp:
 			m.prevInput()
-			return m, nil
+			return m, tea.Batch(textinput.Blink)
 
 		case tea.KeyEnter:
 			m.resetErrs()
@@ -89,10 +89,11 @@ func (m LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if len(m.errs) == 0 {
 					return m, func() tea.Msg { return viewtypes.Dashboard }
 				}
-			} else if m.focusIndex == LoginFormLoginLink { // Login Link
+			} else if m.focusIndex == LoginFormRegisterLink { // Login Link
 				return m, func() tea.Msg { return viewtypes.Register }
 			} else {
 				m.nextInput()
+				return m, tea.Batch(textinput.Blink)
 			}
 		}
 	}
@@ -111,7 +112,7 @@ func (m LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *LoginModel) nextInput() {
 	m.focusIndex++
-	if m.focusIndex > LoginFormLoginLink {
+	if m.focusIndex > LoginFormRegisterLink {
 		m.focusIndex = 0
 	}
 	m.updateFocus()
@@ -121,7 +122,7 @@ func (m *LoginModel) nextInput() {
 func (m *LoginModel) prevInput() {
 	m.focusIndex--
 	if m.focusIndex < 0 {
-		m.focusIndex = LoginFormLoginLink
+		m.focusIndex = LoginFormRegisterLink
 	}
 	m.updateFocus()
 	m.resetErrs()
@@ -144,15 +145,15 @@ func (m *LoginModel) updateFocus() {
 
 func (m *LoginModel) validate() {
 	if !utils.IsEmailValid(m.fields[LoginFormEmail].input.Value()) {
-		m.errs[LoginFormEmail] = "not a valid email"
+		m.errs[LoginFormEmail] = "Invalid email"
 	}
 
 	if m.fields[LoginFormEmail].input.Value() == "" {
-		m.errs[LoginFormEmail] = "email is required"
+		m.errs[LoginFormEmail] = "Email required"
 	}
 
 	if m.fields[LoginFormPassword].input.Value() == "" {
-		m.errs[LoginFormPassword] = "password is required"
+		m.errs[LoginFormPassword] = "Password required"
 	}
 }
 
@@ -165,19 +166,26 @@ func (m LoginModel) View() string {
 
 	b.WriteString("\nLOGIN\n\n")
 
-	for _, field := range m.fields {
-		// b.WriteString(field.label + "\n")
-		b.WriteString(field.input.View() + "\n")
-	}
+	for i, field := range m.fields {
+		// Label
+		if field.label != "" {
+			if m.focusIndex == i {
+				b.WriteString(styles.FocusedStyle.Render(field.label) + "\n")
+			} else {
+				b.WriteString(field.label + "\n")
+			}
+		}
 
-	if len(m.errs) > 0 {
-		b.WriteString("\n")
-	}
-	if err, ok := m.errs[LoginFormEmail]; ok {
-		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
-	}
-	if err, ok := m.errs[LoginFormPassword]; ok {
-		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
+		// Input
+		b.WriteString(field.input.View() + "\n")
+
+		// Error
+		if err, ok := m.errs[i]; ok {
+			b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n\n")
+		} else {
+			b.WriteString("\n")
+		}
+
 	}
 
 	// Submit Button
@@ -187,13 +195,21 @@ func (m LoginModel) View() string {
 	}
 	b.WriteString("\n" + button + "\n")
 
-	// Login Link
+	//  Register Link
 	loginText := "Don't have an account yet?"
-	if m.focusIndex == LoginFormLoginLink {
+	if m.focusIndex == LoginFormRegisterLink {
 		loginText = styles.FocusedStyle.Render(loginText)
 	}
 	b.WriteString("\n" + loginText + "\n")
 
 	card := styles.AuthCard.Render(b.String())
-	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, card)
+	logo := lipgloss.NewStyle().
+		Width(m.width).
+		Align(lipgloss.Center).
+		Render("🔥deeploy.sh\n")
+
+	view := lipgloss.JoinVertical(0.5, logo, card)
+	layout := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, view)
+	return layout
+
 }

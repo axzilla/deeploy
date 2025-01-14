@@ -45,19 +45,19 @@ func NewRegister(w, h int) RegisterModel {
 		t := textinput.New()
 		switch i {
 		case RegisterFormEmail:
-			// m.form[i].label = styles.LabelStyle.Render("email")
-			t.Placeholder = "email"
+			m.fields[i].label = "Email"
+			t.Placeholder = "your@email.com"
 			t.Focus()
 			t.PromptStyle = styles.FocusedStyle
 			t.TextStyle = styles.FocusedStyle
 		case RegisterFormPassword:
-			// m.form[i].label = styles.LabelStyle.Render("password")
-			t.Placeholder = "password"
+			m.fields[i].label = "Password"
+			t.Placeholder = "min. 8 chars"
 			t.EchoMode = textinput.EchoPassword
 			t.EchoCharacter = '•'
 		case RegisterFormPasswordConfirm:
-			// m.form[i].label = styles.LabelStyle.Render("confirm password")
-			t.Placeholder = "confirm password"
+			m.fields[i].label = "Confirm"
+			t.Placeholder = "repeat password"
 			t.EchoMode = textinput.EchoPassword
 			t.EchoCharacter = '•'
 		}
@@ -82,11 +82,11 @@ func (m RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyTab, tea.KeyDown:
 			m.nextInput()
-			return m, nil
+			return m, tea.Batch(textinput.Blink)
 
 		case tea.KeyShiftTab, tea.KeyUp:
 			m.prevInput()
-			return m, nil
+			return m, tea.Batch(textinput.Blink)
 
 		case tea.KeyEnter:
 			m.resetErrs()
@@ -99,6 +99,7 @@ func (m RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, func() tea.Msg { return viewtypes.Login }
 			} else {
 				m.nextInput()
+				return m, tea.Batch(textinput.Blink)
 			}
 		}
 	}
@@ -152,19 +153,19 @@ func (m *RegisterModel) updateFocus() {
 
 func (m *RegisterModel) validate() {
 	if !utils.IsEmailValid(m.fields[RegisterFormEmail].input.Value()) {
-		m.errs[RegisterFormEmail] = "not a valid email"
+		m.errs[RegisterFormEmail] = "Invalid email"
 	}
 
 	if m.fields[RegisterFormEmail].input.Value() == "" {
-		m.errs[RegisterFormEmail] = "email is required"
+		m.errs[RegisterFormEmail] = "Email required"
 	}
 
-	if m.fields[RegisterFormPassword].input.Value() == "" {
-		m.errs[RegisterFormPassword] = "password is required"
+	if len(m.fields[RegisterFormPassword].input.Value()) < 8 {
+		m.errs[RegisterFormPassword] = "Min. 8 chars"
 	}
 
 	if m.fields[RegisterFormPassword].input.Value() != m.fields[RegisterFormPasswordConfirm].input.Value() {
-		m.errs[RegisterFormPassword] = "passwords do not match"
+		m.errs[RegisterFormPasswordConfirm] = "Passwords don't match"
 	}
 }
 
@@ -177,22 +178,26 @@ func (m RegisterModel) View() string {
 
 	b.WriteString("\nREGISTER\n\n")
 
-	for _, field := range m.fields {
-		// b.WriteString(field.label + "\n")
-		b.WriteString(field.input.View() + "\n")
-	}
+	for i, field := range m.fields {
+		// Label
+		if field.label != "" {
+			if m.focusIndex == i {
+				b.WriteString(styles.FocusedStyle.Render(field.label) + "\n")
+			} else {
+				b.WriteString(field.label + "\n")
+			}
+		}
 
-	if len(m.errs) > 0 {
-		b.WriteString("\n")
-	}
-	if err, ok := m.errs[RegisterFormEmail]; ok {
-		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
-	}
-	if err, ok := m.errs[RegisterFormPassword]; ok {
-		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
-	}
-	if err, ok := m.errs[RegisterFormPasswordConfirm]; ok {
-		b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n")
+		// Input
+		b.WriteString(field.input.View() + "\n")
+
+		// Error
+		if err, ok := m.errs[i]; ok {
+			b.WriteString(styles.ErrorStyle.Render("* "+err) + "\n\n")
+		} else {
+			b.WriteString("\n")
+		}
+
 	}
 
 	// Submit Button
@@ -210,5 +215,12 @@ func (m RegisterModel) View() string {
 	b.WriteString("\n" + loginText + "\n")
 
 	card := styles.AuthCard.Render(b.String())
-	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, card)
+	logo := lipgloss.NewStyle().
+		Width(m.width).
+		Align(lipgloss.Center).
+		Render("🔥deeploy.sh\n")
+
+	view := lipgloss.JoinVertical(0.5, logo, card)
+	layout := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, view)
+	return layout
 }

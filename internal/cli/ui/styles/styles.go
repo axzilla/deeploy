@@ -7,13 +7,16 @@ import (
 )
 
 var (
-	FocusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	ColorPrimary = lipgloss.Color("105")
+	ColorError   = lipgloss.Color("9")
+
+	FocusedStyle        = lipgloss.NewStyle().Foreground(ColorPrimary)
 	BlurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("238"))
 	CursorStyle         = FocusedStyle
 	NoStyle             = lipgloss.NewStyle()
 	HelpStyle           = BlurredStyle
 	CursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
-	ErrorStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
+	ErrorStyle          = lipgloss.NewStyle().Foreground(ColorError)
 	LabelStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 
 	AuthCard = lipgloss.NewStyle().
