@@ -20,19 +20,19 @@ type RegisterForm struct {
 func (f *RegisterForm) Validate() RegisterErrors {
 	var errors RegisterErrors
 	if !utils.IsEmailValid(f.Email.Value()) {
-		errors.Email = "Not a valid email"
+		errors.Email = "not a valid email"
 	}
 	if f.Email.Value() == "" {
-		errors.Email = "Email is required"
+		errors.Email = "email is required"
 	}
 	if f.Password.Value() == "" {
-		errors.Password = "Password is required"
+		errors.Password = "password is required"
 	}
 	if f.PasswordConfirm.Value() == "" {
-		errors.PasswordConfirm = "Confirm your password"
+		errors.PasswordConfirm = "confirm your password"
 	}
 	if f.Password.Value() != f.PasswordConfirm.Value() {
-		errors.PasswordConfirm = "Passwords do not match"
+		errors.PasswordConfirm = "passwords do not match"
 	}
 	return errors
 }

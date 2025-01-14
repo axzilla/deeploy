@@ -175,13 +175,13 @@ func (m RegisterModel) View() string {
 	// Render Confirm Password input
 	b.WriteString(m.form.PasswordConfirm.View() + "\n")
 	if m.errs.Email != "" {
-		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Error: %s", m.errs.Email)) + "\n")
+		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("* %s", m.errs.Email)) + "\n")
 	}
 	if m.errs.Password != "" {
-		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Error: %s", m.errs.Password)) + "\n")
+		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("* %s", m.errs.Password)) + "\n")
 	}
 	if m.errs.PasswordConfirm != "" {
-		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Error: %s", m.errs.PasswordConfirm)) + "\n")
+		b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("* %s", m.errs.PasswordConfirm)) + "\n")
 	}
 
 	// Render Submit button
