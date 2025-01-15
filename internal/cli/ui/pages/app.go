@@ -8,6 +8,7 @@ import (
 type AppModel struct {
 	currentView viewtypes.View
 	register    RegisterModel
+	initConnect InitConnectModel
 	login       LoginModel
 	width       int
 	height      int
@@ -15,14 +16,15 @@ type AppModel struct {
 
 func NewApp() *AppModel {
 	return &AppModel{
-		login:    NewLogin(0, 0),
-		register: NewRegister(0, 0),
+		login:       NewLogin(0, 0),
+		register:    NewRegister(0, 0),
+		initConnect: NewInitConnect(0, 0),
 	}
 }
 
 func (m *AppModel) Init() tea.Cmd {
-	m.currentView = viewtypes.Register
-	return m.register.Init()
+	m.currentView = viewtypes.InitConnect
+	return m.initConnect.Init()
 }
 
 func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -32,6 +34,10 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 	case viewtypes.View:
 		switch msg {
+		case viewtypes.InitConnect:
+			m.initConnect = NewInitConnect(m.width, m.height)
+			m.currentView = viewtypes.InitConnect
+			return m, m.initConnect.Init()
 		case viewtypes.Login:
 			m.login = NewLogin(m.width, m.height)
 			m.currentView = viewtypes.Login
@@ -67,11 +73,21 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, cmd
 	}
+
+	if m.currentView == viewtypes.InitConnect {
+		model, cmd := m.initConnect.Update(msg)
+		if initConnect, ok := model.(InitConnectModel); ok {
+			m.initConnect = initConnect
+		}
+		return m, cmd
+	}
 	return m, nil
 }
 
 func (m *AppModel) View() string {
 	switch m.currentView {
+	case viewtypes.InitConnect:
+		return m.initConnect.View()
 	case viewtypes.Register:
 		return m.register.View()
 	case viewtypes.Login:

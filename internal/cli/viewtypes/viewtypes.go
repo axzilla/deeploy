@@ -3,7 +3,8 @@ package viewtypes
 type View string
 
 var (
-	Register  View = "register"
-	Login     View = "login"
-	Dashboard View = "dashboard"
+	InitConnect View = "init_connect"
+	Register    View = "register"
+	Login       View = "login"
+	Dashboard   View = "dashboard"
 )

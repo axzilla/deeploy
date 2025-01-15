@@ -211,5 +211,4 @@ func (m LoginModel) View() string {
 	view := lipgloss.JoinVertical(0.5, logo, card)
 	layout := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, view)
 	return layout
-
 }
