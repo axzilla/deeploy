@@ -1,15 +1,105 @@
 package ui
 
 import (
+	"fmt"
+	"io"
+	"log"
+	"net"
+	"net/http"
 	"os/exec"
+	"runtime"
 	"strings"
 
+	"github.com/axzilla/deeploy/internal/cli/config"
 	"github.com/axzilla/deeploy/internal/cli/ui/components"
 	"github.com/axzilla/deeploy/internal/cli/ui/styles"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
+
+type authCallback struct {
+	token string
+	err   error
+}
+
+type AuthErrorMsg struct {
+	err error
+}
+
+type AuthSuccessMsg struct {
+	token string
+}
+
+// Starts a local server for ayth callback
+func startLocalAuthServer() (int, chan authCallback) {
+	callback := make(chan authCallback)
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+		token, _ := io.ReadAll(r.Body)
+		callback <- authCallback{token: string(token)}
+		w.Write([]byte("OK"))
+	})
+
+	// Get a free random port
+	listener, _ := net.Listen("tcp", "localhost:0")
+	port := listener.Addr().(*net.TCPAddr).Port
+
+	go http.Serve(listener, mux)
+
+	return port, callback
+}
+
+func openBrowser(url string) error {
+	var cmd string
+	var args []string
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = "cmd"
+		args = []string{"/c", "start"}
+	case "darwin":
+		cmd = "open"
+	default: // "linux", "bsd", etc.
+		cmd = "xdg-open"
+	}
+
+	return exec.Command(cmd, append(args, url)...).Start()
+}
+
+func (m InitConnectModel) startBrowserAuth() tea.Cmd {
+	return func() tea.Msg {
+		port, callback := startLocalAuthServer()
+		log.Println(port)
+
+		// Open browser
+		authURL := fmt.Sprintf(
+			"http://%s/cli-auth?port=%d",
+			m.serverInput.Value(),
+			port,
+		)
+		openBrowser(authURL)
+
+		// Waiting for token
+		result := <-callback
+		if result.err != nil {
+			return AuthErrorMsg{err: result.err}
+		}
+
+		// Save config
+		cfg := config.Config{
+			Server: m.serverInput.Value(),
+			Token:  result.token,
+		}
+		if err := config.SaveConfig(&cfg); err != nil {
+			return AuthErrorMsg{err: err}
+		}
+
+		return AuthSuccessMsg{token: result.token}
+	}
+}
 
 type InitConnectModel struct {
 	serverInput textinput.Model
@@ -54,9 +144,7 @@ func (m InitConnectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.validate()
 			if m.err == "" {
 				m.waiting = true
-				return m, func() tea.Msg {
-					return exec.Command("open", "https://deeploy.sh").Run()
-				}
+				return m, m.startBrowserAuth()
 			}
 		}
 	}
