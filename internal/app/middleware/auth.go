@@ -7,7 +7,6 @@ import (
 	"github.com/axzilla/deeploy/internal/app/cookie"
 	"github.com/axzilla/deeploy/internal/app/jwt"
 	"github.com/axzilla/deeploy/internal/app/services"
-	jwtlib "github.com/golang-jwt/jwt/v4"
 )
 
 type AuthMiddleWare struct {
@@ -26,10 +25,7 @@ func (m *AuthMiddleWare) Auth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		claims := jwtlib.MapClaims{}
-		t, err := jwtlib.ParseWithClaims(token, claims, func(t *jwtlib.Token) (interface{}, error) {
-			return jwt.JwtSecret, nil
-		})
+		t, claims, err := jwt.ValidateToken(token)
 		if err != nil || !t.Valid {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
