@@ -6,7 +6,7 @@ import "github.com/axzilla/templui/pkg/components"
 var cliAuthScriptHandle = templ.NewOnceHandle()
 
 templ CliAuthSuccess(port, token string) {
-	@layouts.AppLayout() {
+	@layouts.AuthLayout() {
 		@cliAuthScriptHandle.Once() {
 			@templ.JSONScript("cli-data", map[string]string{
 				"port":  port,
