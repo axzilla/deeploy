@@ -7,7 +7,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// TODO: use env secret
 var JwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 func CreateToken(userID string) (string, error) {
