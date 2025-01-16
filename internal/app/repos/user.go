@@ -7,6 +7,7 @@ import (
 )
 
 type UserRepoInterface interface {
+	CountUsers() (int, error)
 	CreateUser(user *models.UserDB) error
 	GetUserByEmail(email string) (*models.UserDB, error)
 	GetUserByID(id string) (*models.UserDB, error)
@@ -18,6 +19,21 @@ type UserRepo struct {
 
 func NewUserRepo(db *sql.DB) *UserRepo {
 	return &UserRepo{db: db}
+}
+
+func (r *UserRepo) CountUsers() (int, error) {
+	var count int
+
+	query := `
+		SELECT count(*)
+		from users`
+
+	err := r.db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (m *UserRepo) CreateUser(user *models.UserDB) error {

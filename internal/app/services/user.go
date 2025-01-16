@@ -14,6 +14,7 @@ type UserServiceInterface interface {
 	Register(form forms.RegisterForm) (string, error)
 	Login(email, password string) (string, error)
 	GetUserByID(id string) (*models.UserApp, error)
+	HasUser() (bool, error)
 }
 
 type UserService struct {
@@ -22,6 +23,15 @@ type UserService struct {
 
 func NewUserService(repo *repos.UserRepo) *UserService {
 	return &UserService{repo: repo}
+}
+
+func (s *UserService) HasUser() (bool, error) {
+	count, err := s.repo.CountUsers()
+	if err != nil {
+		return false, err
+	}
+	hasUser := count > 0
+	return hasUser, nil
 }
 
 func (s *UserService) Register(form forms.RegisterForm) (string, error) {

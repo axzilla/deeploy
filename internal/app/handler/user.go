@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -23,9 +24,13 @@ func (h *UserHandler) AuthView(w http.ResponseWriter, r *http.Request) {
 	isCLI := r.URL.Query().Get("cli") == "true"
 	port := r.URL.Query().Get("port")
 
-	// TODO: implement hasAnyUser service/repo stuff
-	hasAnyUser := true
-	if hasAnyUser {
+	hasUser, err := h.service.HasUser()
+	if err != nil {
+		// TODO: handle error correctly
+		fmt.Println(err)
+	}
+
+	if hasUser {
 		pages.Login(forms.LoginErrors{}, forms.LoginForm{}, isCLI, port).Render(r.Context(), w)
 		return
 	}
