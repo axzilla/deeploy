@@ -8,11 +8,14 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/axzilla/deeploy/internal/cli/config"
 	"github.com/axzilla/deeploy/internal/cli/ui/components"
 	"github.com/axzilla/deeploy/internal/cli/ui/styles"
+	"github.com/axzilla/deeploy/internal/cli/viewtypes"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -37,10 +40,19 @@ func startLocalAuthServer() (int, chan authCallback) {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
-		token, _ := io.ReadAll(r.Body)
+	mux.HandleFunc("POST /callback", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		log.Println("Received callback request")
+		token, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("Error reading body: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		callback <- authCallback{token: string(token)}
 		w.Write([]byte("OK"))
+		return
 	})
 
 	// Get a free random port
@@ -72,11 +84,10 @@ func openBrowser(url string) error {
 func (m InitConnectModel) startBrowserAuth() tea.Cmd {
 	return func() tea.Msg {
 		port, callback := startLocalAuthServer()
-		log.Println(port)
 
 		// Open browser
 		authURL := fmt.Sprintf(
-			"http://%s/cli-auth?port=%d",
+			"http://%s?cli=true&port=%d",
 			m.serverInput.Value(),
 			port,
 		)
@@ -146,6 +157,13 @@ func (m InitConnectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.waiting = true
 				return m, m.startBrowserAuth()
 			}
+
+		}
+
+	case AuthSuccessMsg:
+		return m, func() tea.Msg {
+			log.Println("InitConnect: Sending Dashboard view")
+			return viewtypes.Dashboard
 		}
 	}
 
@@ -186,10 +204,43 @@ func (m InitConnectModel) View() string {
 }
 
 func (m *InitConnectModel) validate() {
-	if m.serverInput.Value() == "" {
+	value := strings.TrimSpace(m.serverInput.Value())
+
+	// 1. Base-Check
+	if value == "" {
 		m.err = "Server required"
+		return
 	}
-	// TODO: Add add. validations like: no valid ip/server whatever and so on
+
+	// 2. Format-Check (Host:Port)
+	host, port, err := net.SplitHostPort(value)
+	if err != nil {
+		m.err = "Invalid format. Use host:port (e.g. server:8090)"
+		return
+	}
+
+	// 3. Port-Validation
+	portNum, err := strconv.Atoi(port)
+	if err != nil || portNum < 1 || portNum > 65535 {
+		m.err = "Invalid port number"
+		return
+	}
+
+	// 4. Simple Host-Check
+	if host == "" {
+		m.err = "Invalid host"
+		return
+	}
+
+	// Connection test
+	timeout := time.Second * 3
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), timeout)
+	if err != nil {
+		m.err = "Server not reachable"
+		m.status = ""
+		return
+	}
+	defer conn.Close()
 }
 
 func (m *InitConnectModel) resetErr() {

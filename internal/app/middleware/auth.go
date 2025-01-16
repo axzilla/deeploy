@@ -51,10 +51,15 @@ func RequireAuth(next http.HandlerFunc, redirectTo ...string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := cookie.GetTokenFromCookie(r)
 		if token == "" {
-			path := "/login"
+			path := "/"
 			if len(redirectTo) > 0 {
 				path = redirectTo[0]
 			}
+
+			if r.URL.RawQuery != "" {
+				path += "?" + r.URL.RawQuery
+			}
+
 			http.Redirect(w, r, path, http.StatusSeeOther)
 			return
 		}

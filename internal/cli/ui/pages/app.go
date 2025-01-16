@@ -23,6 +23,12 @@ func NewApp() *AppModel {
 }
 
 func (m *AppModel) Init() tea.Cmd {
+	// TODO: Implement auth
+	// config, err := config.LoadConfig()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
 	m.currentView = viewtypes.InitConnect
 	return m.initConnect.Init()
 }

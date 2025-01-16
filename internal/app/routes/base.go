@@ -18,5 +18,4 @@ func Base(app deeploy.App) {
 	auth := middleware.NewAuthMiddleware(userService)
 
 	app.Router.HandleFunc("GET /dashboard", mw.RequireAuth(auth.Auth(baseHandler.DashboardView)))
-	app.Router.HandleFunc("GET /", baseHandler.LandingView)
 }
