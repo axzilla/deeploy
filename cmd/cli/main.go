@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/axzilla/deeploy/internal/cli/ui/pages"
 	tea "github.com/charmbracelet/bubbletea"
-	"os"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 	}
 
 	// Start App
-	m := ui.NewApp()
+	m := pages.NewApp()
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Error running program:", err)

@@ -1,9 +1,8 @@
-package ui
+package pages
 
 import (
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"os/exec"
@@ -45,7 +44,6 @@ func startLocalAuthServer() (int, chan authCallback) {
 
 		token, err := io.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("Error reading body: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -80,7 +78,7 @@ func openBrowser(url string) error {
 	return exec.Command(cmd, append(args, url)...).Start()
 }
 
-func (m InitConnectModel) startBrowserAuth() tea.Cmd {
+func (m ConnectPage) startBrowserAuth() tea.Cmd {
 	return func() tea.Msg {
 		port, callback := startLocalAuthServer()
 
@@ -107,11 +105,11 @@ func (m InitConnectModel) startBrowserAuth() tea.Cmd {
 			return AuthErrorMsg{err: err}
 		}
 
-		return AuthSuccessMsg{token: result.token}
+		return PushPageMsg{Page: NewDashboard()}
 	}
 }
 
-type InitConnectModel struct {
+type ConnectPage struct {
 	serverInput textinput.Model
 	status      string
 	waiting     bool
@@ -120,33 +118,29 @@ type InitConnectModel struct {
 	err         string
 }
 
-func NewInitConnect(width, height int) InitConnectModel {
+func NewConnectPage() ConnectPage {
 	ti := textinput.New()
 	ti.Placeholder = "e.g. 123.45.67.89:8090"
 	ti.Focus()
 
-	return InitConnectModel{
+	return ConnectPage{
 		serverInput: ti,
-		width:       width,
-		height:      height,
 	}
 }
 
-func (m InitConnectModel) Init() tea.Cmd {
+func (p ConnectPage) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m InitConnectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m ConnectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-
 	case tea.KeyMsg:
 		m.resetErr()
-
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -158,75 +152,73 @@ func (m InitConnectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		}
-
 	case AuthSuccessMsg:
 		return m, func() tea.Msg {
 			return viewtypes.Dashboard
 		}
 	}
-
 	m.serverInput, cmd = m.serverInput.Update(msg)
 	return m, cmd
 }
 
-func (m InitConnectModel) View() string {
+func (p ConnectPage) View() string {
 	var b strings.Builder
 
-	if m.waiting {
+	if p.waiting {
 		b.WriteString("✨ Browser opened for authentication. Waiting for completion.")
 	} else {
 		b.WriteString("CONNECT TO SERVER\n\n")
 		b.WriteString(styles.FocusedStyle.Render("Server "))
-		b.WriteString(m.serverInput.View())
-		if m.err != "" {
-			b.WriteString(styles.ErrorStyle.Render("\n* " + m.err))
+		b.WriteString(p.serverInput.View())
+		if p.err != "" {
+			b.WriteString(styles.ErrorStyle.Render("\n* " + p.err))
 		}
-		if m.status != "" {
-			b.WriteString(m.status)
+		if p.status != "" {
+			b.WriteString(p.status)
 		}
 	}
 
 	logo := lipgloss.NewStyle().
-		Width(m.width).
+		Width(p.width).
 		Align(lipgloss.Center).
 		Render("🔥deeploy.sh\n")
 	card := components.Card(50).Render(b.String())
 	footer := lipgloss.NewStyle().
-		Width(m.width).
+		Width(p.width).
 		Align(lipgloss.Center).
 		Render("\n[ctrl+c] exit")
 
 	view := lipgloss.JoinVertical(0.5, logo, card, footer)
-	layout := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, view)
+	layout := lipgloss.Place(p.width, p.height, lipgloss.Center, lipgloss.Center, view)
 	return layout
 }
 
-func (m *InitConnectModel) validate() {
-	value := strings.TrimSpace(m.serverInput.Value())
+func (p *ConnectPage) validate() {
+	value := strings.TrimSpace(p.serverInput.Value())
 
 	// 1. Base-Check
 	if value == "" {
-		m.err = "Server required"
+		p.err = "Server required"
 		return
 	}
 
 	// 2. Format-Check (Host:Port)
 	host, port, err := net.SplitHostPort(value)
 	if err != nil {
-		m.err = "Invalid format. Use host:port (e.g. server:8090)"
+		p.err = "Invalid format. Use host:port (e.g. server:8090)"
 		return
 	}
 
 	// 3. Port-Validation
 	portNum, err := strconv.Atoi(port)
 	if err != nil || portNum < 1 || portNum > 65535 {
-		m.err = "Invalid port number"
+		p.err = "Invalid port number"
 		return
 	}
 
 	// 4. Simple Host-Check
 	if host == "" {
-		m.err = "Invalid host"
+		p.err = "Invalid host"
 		return
 	}
 
@@ -234,13 +226,13 @@ func (m *InitConnectModel) validate() {
 	timeout := time.Second * 3
 	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), timeout)
 	if err != nil {
-		m.err = "Server not reachable"
-		m.status = ""
+		p.err = "Server not reachable"
+		p.status = ""
 		return
 	}
 	defer conn.Close()
 }
 
-func (m *InitConnectModel) resetErr() {
-	m.err = ""
+func (p *ConnectPage) resetErr() {
+	p.err = ""
 }

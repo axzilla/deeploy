@@ -1,4 +1,4 @@
-package ui
+package pages
 
 import (
 	"io"
@@ -14,17 +14,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type DashboardModel struct {
+type DashboardPage struct {
 	width   int
 	height  int
 	message string
 }
 
-func NewDashboard(width, height int) DashboardModel {
-	return DashboardModel{
-		width:  width,
-		height: height,
-	}
+func NewDashboard() DashboardPage {
+	return DashboardPage{}
 }
 
 type welcomeMessage string
@@ -32,13 +29,11 @@ type welcomeMessage string
 func getWelcomeMessage() tea.Msg {
 	config, err := config.LoadConfig()
 	if err != nil {
-		log.Println("Config error:", err)
 		return viewtypes.InitConnect
 	}
 
 	r, err := http.NewRequest("POST", "http://"+config.Server+"/dashboard", nil)
 	if err != nil {
-		log.Println(err)
 		return viewtypes.InitConnect
 	}
 	r.Header.Set("Authorization", "Bearer "+config.Token)
@@ -46,7 +41,6 @@ func getWelcomeMessage() tea.Msg {
 	client := http.Client{}
 	res, err := client.Do(r)
 	if err != nil {
-		log.Println(err)
 		return viewtypes.InitConnect
 	}
 	defer res.Body.Close()
@@ -60,48 +54,43 @@ func getWelcomeMessage() tea.Msg {
 	return welcomeMessage(result)
 }
 
-func (m DashboardModel) Init() tea.Cmd {
+func (p DashboardPage) Init() tea.Cmd {
 	return getWelcomeMessage
 }
 
-func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (p DashboardPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// log.Printf("Dashboard Update called with msg type: %T", msg)
+
 	switch msg := msg.(type) {
-	case welcomeMessage:
-		return DashboardModel{
-			width:   m.width,
-			height:  m.height,
-			message: string(msg),
-		}, nil
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
-			return m, tea.Quit
-		}
+		p.width = msg.Width
+		p.height = msg.Height
+		return p, nil
+	case welcomeMessage:
+		p.message = string(msg) // Nur die Message updaten
+		return p, nil           // Kein zusätzliches Command
 	}
-
-	return m, nil
+	return p, nil
 }
 
-func (m DashboardModel) View() string {
+func (p DashboardPage) View() string {
+	// log.Printf("Dashboard View called with width: %d, height: %d, message: %s", m.width, m.height, m.message)
+
 	var b strings.Builder
 
-	b.WriteString(strconv.Itoa(m.width))
+	b.WriteString(strconv.Itoa(p.width))
 
 	logo := lipgloss.NewStyle().
-		Width(m.width).
+		Width(p.width).
 		Align(lipgloss.Center).
 		Render("🔥deeploy.sh\n")
-	card := components.Card(0).Render(m.message)
+	card := components.Card(0).Render(p.message)
 	footer := lipgloss.NewStyle().
-		Width(m.width).
+		Width(p.width).
 		Align(lipgloss.Center).
 		Render("\n[ctrl+c] exit")
 
 	view := lipgloss.JoinVertical(0.5, logo, card, footer)
-	layout := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, view)
+	layout := lipgloss.Place(p.width, p.height, lipgloss.Center, lipgloss.Center, view)
 	return layout
 }

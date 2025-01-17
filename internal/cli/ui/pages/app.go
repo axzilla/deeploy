@@ -1,87 +1,159 @@
-package ui
+package pages
 
 import (
+	"log"
+
 	"github.com/axzilla/deeploy/internal/cli/config"
-	"github.com/axzilla/deeploy/internal/cli/viewtypes"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type AppModel struct {
-	currentView viewtypes.View
-	initConnect InitConnectModel
-	dashboard   DashboardModel
-	width       int
-	height      int
+// App is like a stack of papers (pages). The top page is what you see.
+// Think of it like browser tabs or a deck of cards.
+type App struct {
+	stack  []tea.Model // All our pages, last one is visible
+	width  int         // Terminal width
+	height int         // Terminal height
 }
 
-func NewApp() AppModel {
-	return AppModel{
-		currentView: viewtypes.Dashboard, // Set initial view
-		initConnect: NewInitConnect(0, 0),
-		dashboard:   NewDashboard(0, 0),
+// Message to add a new page on top of the stack
+// Example: Going from login to dashboard, or opening settings
+type PushPageMsg struct {
+	Page tea.Model
+}
+
+// Message to remove the top page and go back to previous
+// Example: Closing settings to go back to dashboard
+type PopPageMsg struct{}
+
+// Create new empty app
+func NewApp() App {
+	return App{
+		stack: make([]tea.Model, 0),
 	}
 }
 
-func (m AppModel) Init() tea.Cmd {
-	config, err := config.LoadConfig()
-	if err != nil || config.Server == "" || config.Token == "" {
-		return func() tea.Msg {
-			return viewtypes.InitConnect
+// Called when app starts - we wait for window size before creating pages
+func (a App) Init() tea.Cmd {
+	return nil
+}
+
+// Handles all events/messages in the app
+func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Handle quit (ctrl+c, esc)
+	if msg, ok := msg.(tea.KeyMsg); ok {
+		if msg.Type == tea.KeyCtrlC || msg.Type == tea.KeyEsc {
+			return a, tea.Quit
 		}
 	}
-	return func() tea.Msg {
-		return viewtypes.Dashboard
-	}
-}
 
-func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	// When terminal size changes
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-	case viewtypes.View:
-		switch msg {
-		case viewtypes.InitConnect:
-			m.initConnect = NewInitConnect(m.width, m.height)
-			m.currentView = viewtypes.InitConnect
-			return m, m.initConnect.Init()
-		case viewtypes.Dashboard:
-			m.dashboard = NewDashboard(m.width, m.height)
-			m.currentView = viewtypes.Dashboard
-			return m, m.dashboard.Init()
+		a.width = msg.Width
+		a.height = msg.Height
+
+		// If no pages yet, create first one
+		if len(a.stack) == 0 {
+			config, err := config.LoadConfig()
+			var page tea.Model
+
+			// No config = show login, has config = show dashboard
+			if err != nil || config.Server == "" || config.Token == "" {
+				page = NewConnectPage()
+			} else {
+				page = NewDashboard()
+			}
+
+			// Add first page to stack
+			a.stack = append(a.stack, page)
+
+			// Update page with window size and initialize it
+			updatedPage, cmd := page.Update(msg)
+			a.stack[len(a.stack)-1] = updatedPage
+			return a, tea.Batch(cmd, updatedPage.Init())
 		}
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "esc":
-			return m, tea.Quit
+
+		// Update current page's window size
+		currentPage := a.stack[len(a.stack)-1]
+		updatedPage, cmd := currentPage.Update(msg)
+		a.stack[len(a.stack)-1] = updatedPage
+		return a, cmd
+
+		// When adding a new page (push)
+		// Use push when:
+		// - Opening a new view on top (settings, details, etc)
+		// - Want to keep previous page in history
+		// - Need "back" functionality
+	case PushPageMsg:
+		newPage := msg.Page
+		log.Printf("Pushing new page: %T", newPage)
+
+		// Add to stack
+		a.stack = append(a.stack, newPage)
+
+		// Batch window size and init commands together
+		// This prevents double rendering by ensuring both happen in sequence
+		return a, tea.Batch(
+			func() tea.Msg {
+				return tea.WindowSizeMsg{
+					Width:  a.width,
+					Height: a.height,
+				}
+			},
+			newPage.Init(),
+		)
+
+	// When removing top page (pop)
+	// Use pop when:
+	// - Closing a sub-view
+	// - Going "back" to previous view
+	// - Cancelling an operation
+	case PopPageMsg:
+		// Only pop if we have more than one page
+		if len(a.stack) > 1 {
+			a.stack = a.stack[:len(a.stack)-1]
+			return a, nil
 		}
+
+	// All other messages go to current page
+	default:
+		if len(a.stack) == 0 {
+			return a, nil
+		}
+		currentPage := a.stack[len(a.stack)-1]
+		updatedPage, cmd := currentPage.Update(msg)
+		a.stack[len(a.stack)-1] = updatedPage
+		return a, cmd
 	}
 
-	// Send updates to "children"
-	if m.currentView == viewtypes.InitConnect {
-		model, cmd := m.initConnect.Update(msg)
-		if initConnect, ok := model.(InitConnectModel); ok {
-			m.initConnect = initConnect
-		}
-		return m, cmd
-	}
-	if m.currentView == viewtypes.Dashboard {
-		model, cmd := m.dashboard.Update(msg)
-		if dashboard, ok := model.(DashboardModel); ok {
-			m.dashboard = dashboard
-		}
-		return m, cmd
-	}
-
-	return m, nil
+	return a, nil
 }
 
-func (m AppModel) View() string {
-	switch m.currentView {
-	case viewtypes.InitConnect:
-		return m.initConnect.View()
-	case viewtypes.Dashboard:
-		return m.dashboard.View()
+// Shows current (top) page
+func (a App) View() string {
+	if len(a.stack) == 0 {
+		return "Loading..."
 	}
-	return ""
+	return a.stack[len(a.stack)-1].View()
 }
+
+// Examples of when to use Push/Pop:
+//
+// Push examples:
+// - Login -> Dashboard (push dashboard)
+// - Dashboard -> Settings (push settings)
+// - Dashboard -> User Details (push details)
+// - Dashboard -> Help Page (push help)
+//
+// Pop examples:
+// - Settings -> Back to Dashboard (pop settings)
+// - Help -> Back to previous view (pop help)
+// - Details -> Back to list (pop details)
+//
+// Navigation flow example:
+// 1. [Login]
+// 2. Push Dashboard -> [Login, Dashboard]
+// 3. Push Settings -> [Login, Dashboard, Settings]
+// 4. Pop Settings -> [Login, Dashboard]
+// 5. Push Help -> [Login, Dashboard, Help]
+// 6. Pop Help -> [Login, Dashboard]
