@@ -2,7 +2,6 @@ package pages
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -47,10 +46,9 @@ func getWelcomeMessage() tea.Msg {
 
 	result, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Println("HTTP error:", err)
 		return viewtypes.InitConnect
 	}
-	log.Println("Got result:", string(result))
+
 	return welcomeMessage(result)
 }
 
@@ -59,7 +57,6 @@ func (p DashboardPage) Init() tea.Cmd {
 }
 
 func (p DashboardPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// log.Printf("Dashboard Update called with msg type: %T", msg)
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -74,8 +71,6 @@ func (p DashboardPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (p DashboardPage) View() string {
-	// log.Printf("Dashboard View called with width: %d, height: %d, message: %s", m.width, m.height, m.message)
-
 	var b strings.Builder
 
 	b.WriteString(strconv.Itoa(p.width))
