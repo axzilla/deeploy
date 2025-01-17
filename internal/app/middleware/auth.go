@@ -2,11 +2,13 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/axzilla/deeploy/internal/app/cookie"
 	"github.com/axzilla/deeploy/internal/app/jwt"
 	"github.com/axzilla/deeploy/internal/app/services"
+	"github.com/axzilla/deeploy/internal/app/ui/pages"
 )
 
 type AuthMiddleWare struct {
@@ -17,9 +19,21 @@ func NewAuthMiddleware(userService services.UserServiceInterface) *AuthMiddleWar
 	return &AuthMiddleWare{userService: userService}
 }
 
+func getToken(r *http.Request) string {
+	// CLI token
+	authHeader := r.Header.Get("Authorization")
+	fmt.Println("GET TOKEN: ", authHeader)
+	const bearerPrefix = "Bearer "
+	if len(authHeader) > len(bearerPrefix) && authHeader[:len(bearerPrefix)] == bearerPrefix {
+		return authHeader[len(bearerPrefix):]
+	}
+	// Web token
+	return cookie.GetTokenFromCookie(r)
+}
+
 func (m *AuthMiddleWare) Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := cookie.GetTokenFromCookie(r)
+		token := getToken(r)
 		if token == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -45,15 +59,20 @@ func (m *AuthMiddleWare) Auth(next http.HandlerFunc) http.HandlerFunc {
 
 func RequireAuth(next http.HandlerFunc, redirectTo ...string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := cookie.GetTokenFromCookie(r)
+		isCLI := r.URL.Query().Get("cli") == "true"
+
+		token := getToken(r)
 		if token == "" {
 			path := "/"
 			if len(redirectTo) > 0 {
 				path = redirectTo[0]
 			}
 
-			if r.URL.RawQuery != "" {
-				path += "?" + r.URL.RawQuery
+			// CLI Auth need CLI params
+			if isCLI {
+				if r.URL.RawQuery != "" {
+					path += "?" + r.URL.RawQuery // Behalte cli=true&port=xyz
+				}
 			}
 
 			http.Redirect(w, r, path, http.StatusSeeOther)
@@ -65,8 +84,20 @@ func RequireAuth(next http.HandlerFunc, redirectTo ...string) http.HandlerFunc {
 
 func RequireGuest(next http.HandlerFunc, redirectTo ...string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := cookie.GetTokenFromCookie(r)
+		isCLI := r.URL.Query().Get("cli") == "true"
+
+		token := getToken(r)
 		if token != "" {
+			// CLI flow
+			if isCLI {
+				pages.CliAuthSuccess(
+					r.URL.Query().Get("port"),
+					token,
+				).Render(r.Context(), w)
+				return
+			}
+
+			// Web flow
 			path := "/dashboard"
 			if len(redirectTo) > 0 {
 				path = redirectTo[0]

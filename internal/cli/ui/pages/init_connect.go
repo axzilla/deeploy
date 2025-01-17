@@ -43,7 +43,6 @@ func startLocalAuthServer() (int, chan authCallback) {
 	mux.HandleFunc("POST /callback", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		log.Println("Received callback request")
 		token, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Printf("Error reading body: %v", err)
@@ -162,7 +161,6 @@ func (m InitConnectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case AuthSuccessMsg:
 		return m, func() tea.Msg {
-			log.Println("InitConnect: Sending Dashboard view")
 			return viewtypes.Dashboard
 		}
 	}
