@@ -3,81 +3,95 @@ package pages
 import "github.com/axzilla/deeploy/internal/app/ui/layouts"
 import "github.com/axzilla/templui/pkg/components"
 import "github.com/axzilla/deeploy/internal/app/forms"
+import "fmt"
 
-templ Login(errs forms.LoginErrors, form forms.LoginForm) {
-	@layouts.BaseLayout() {
-		<div class="flex justify-center items-center">
-			@components.Card(components.CardProps{Class: "max-w-96"}) {
-				@components.CardHeader() {
-					@components.CardTitle() {
-						Sign In
+var loginURL = ""
+
+templ Login(errs forms.LoginErrors, form forms.LoginForm, isCLI bool, port string) {
+	if !isCLI && port == "" {
+		{{ loginURL = "/login" }}
+	} else {
+		{{ loginURL = fmt.Sprintf("/login?cli=%v&port=%s", isCLI, port) }}
+	}
+	@layouts.AuthLayout() {
+		<div class="w-full flex flex-col justify-center items-center gap-4">
+			<a href="/">
+				<p class="font-extrabold text-xl">
+					🔥 deeploy.sh
+				</p>
+			</a>
+			<div class="max-w-sm w-full">
+				@components.Card(components.CardProps{}) {
+					@components.CardHeader() {
+						@components.CardTitle() {
+							Sign In
+						}
+						@components.CardDescription() {
+							Sign in to your account
+						}
 					}
-					@components.CardDescription() {
-						Sign in to your account
-					}
-				}
-				<form action="/login" method="POST">
-					@components.CardContent() {
-						<div class="space-y-4">
-							@components.FormItem(components.FormItemProps{}) {
-								@components.FormLabel(components.FormLabelProps{
-									Text: "Email",
-								})
-								@components.Input(components.InputProps{
-									Name:        "email",
-									Type:        "email",
-									Placeholder: "Enter email",
-									HasError:    errs.Email != "",
-									Value:       form.Email,
-								})
-								if errs.Email != "" {
-									@components.FormMessage(components.FormMessageProps{
-										Type:    "error",
-										Message: errs.Email,
+					<form
+						method="POST"
+						action={ templ.SafeURL(loginURL) }
+					>
+						@components.CardContent() {
+							<div class="space-y-4">
+								@components.FormItem(components.FormItemProps{}) {
+									@components.FormLabel(components.FormLabelProps{
+										Text: "Email",
 									})
-								}
-							}
-							@components.FormItem(components.FormItemProps{}) {
-								@components.FormLabel(components.FormLabelProps{
-									Text: "Password",
-								})
-								@components.Input(components.InputProps{
-									Name:        "password",
-									Type:        "password",
-									Placeholder: "Enter password",
-									HasError:    errs.Password != "",
-								})
-								if errs.Password != "" {
-									@components.FormMessage(components.FormMessageProps{
-										Type:    "error",
-										Message: errs.Password,
+									@components.Input(components.InputProps{
+										Name:        "email",
+										Type:        "email",
+										Placeholder: "Enter email",
+										HasError:    errs.Email != "",
+										Value:       form.Email,
 									})
+									if errs.Email != "" {
+										@components.FormMessage(components.FormMessageProps{
+											Type:    "error",
+											Message: errs.Email,
+										})
+									}
 								}
-							}
-						</div>
-					}
-					@components.CardFooter() {
-						<div class="flex flex-col gap-4 w-full">
+								@components.FormItem(components.FormItemProps{}) {
+									@components.FormLabel(components.FormLabelProps{
+										Text: "Password",
+									})
+									@components.Input(components.InputProps{
+										Name:        "password",
+										Type:        "password",
+										Placeholder: "Enter password",
+										HasError:    errs.Password != "",
+									})
+									if errs.Password != "" {
+										@components.FormMessage(components.FormMessageProps{
+											Type:    "error",
+											Message: errs.Password,
+										})
+									}
+								}
+							</div>
+						}
+						@components.CardFooter() {
 							@components.Button(components.ButtonProps{
-								Type: "submit",
-								Text: "Sign In",
+								Type:  "submit",
+								Text:  "Sign In",
+								Class: "w-full",
 							})
-							<a href="/register" class="hover:underline hover:underline-offset-4">
-								Don't have an account yet?
-							</a>
-						</div>
+						}
+					</form>
+					if errs.General != "" {
+						@components.Toast(components.ToastProps{
+							Message:     errs.General,
+							Type:        "error",
+							Icon:        true,
+							Dismissible: true,
+							Duration:    5000,
+						})
 					}
-				</form>
-				if errs.General != "" {
-					@components.Toast(components.ToastProps{
-						Message:     errs.General,
-						Type:        "error",
-						Icon:        true,
-						Dismissible: true,
-						Duration:    5000,
-					})
 				}
-			}
+			</div>
 		</div>
 	}
 }

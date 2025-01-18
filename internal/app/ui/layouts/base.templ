@@ -1,7 +1,6 @@
 package layouts
 
 import (
-	"github.com/axzilla/deeploy/internal/app/ui/modules"
 	"github.com/axzilla/templui/pkg/helpers"
 )
 
@@ -47,11 +46,8 @@ templ BaseLayout() {
 		<body
 			x-data="themeHandler"
 			x-bind:class="themeClasses"
-			class="min-h-screen grid grid-rows-[auto_1fr]"
 		>
-			@modules.Navbar()
 			{ children... }
-			@modules.MadeWith()
 		</body>
 	</html>
 }

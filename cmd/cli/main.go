@@ -4,26 +4,26 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/axzilla/deeploy/internal/cli"
+	"github.com/axzilla/deeploy/internal/cli/ui/pages"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: cli <command> [flags]")
-		os.Exit(1)
+	// Logging Setup
+	if len(os.Getenv("DEBUG")) > 0 {
+		f, err := tea.LogToFile("debug.log", "debug")
+		if err != nil {
+			fmt.Println("fatal:", err)
+			os.Exit(1)
+		}
+		defer f.Close()
 	}
 
-	// Use first arg as command
-	command := os.Args[1]
-
-	// Shift args for 1 to make flag.Parse() execute correct
-	os.Args = os.Args[1:]
-
-	switch command {
-	case "reset-password":
-		cli.ResetPassword()
-	default:
-		fmt.Printf("Unknown command: %s\n", command)
+	// Start App
+	m := pages.NewApp()
+	p := tea.NewProgram(m, tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
 }

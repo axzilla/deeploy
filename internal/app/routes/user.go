@@ -13,10 +13,11 @@ func User(app deeploy.App) {
 	userService := services.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
-	app.Router.HandleFunc("GET /login", mw.RequireGuest(userHandler.LoginView))
+	// Views
+	app.Router.HandleFunc("GET /", mw.RequireGuest(userHandler.AuthView))
+
+	// APIs
 	app.Router.HandleFunc("POST /login", userHandler.Login)
-	app.Router.HandleFunc("GET /register", mw.RequireGuest(userHandler.RegisterView))
 	app.Router.HandleFunc("POST /register", userHandler.Register)
 	app.Router.HandleFunc("GET /logout", userHandler.Logout)
-
 }

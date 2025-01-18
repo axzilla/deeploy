@@ -1,0 +1,17 @@
+package layouts
+
+import (
+	"github.com/axzilla/deeploy/internal/app/ui/modules"
+)
+
+templ AppLayout() {
+	@BaseLayout() {
+		<div
+			class="min-h-screen grid grid-rows-[auto_1fr]"
+		>
+			@modules.Navbar()
+			{ children... }
+			@modules.MadeWith()
+		</div>
+	}
+}
