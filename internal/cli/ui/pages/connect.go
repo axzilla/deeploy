@@ -20,6 +20,19 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// /////////////////////////////////////////////////////////////////////////////
+// Types & Messages
+// /////////////////////////////////////////////////////////////////////////////
+
+type ConnectPage struct {
+	serverInput textinput.Model
+	status      string
+	waiting     bool
+	width       int
+	height      int
+	err         string
+}
+
 type authCallback struct {
 	token string
 	err   error
@@ -31,6 +44,137 @@ type AuthErrorMsg struct {
 
 type AuthSuccessMsg struct {
 	token string
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Constructors
+///////////////////////////////////////////////////////////////////////////////
+
+func NewConnectPage() ConnectPage {
+	ti := textinput.New()
+	ti.Placeholder = "e.g. 123.45.67.89:8090"
+	ti.Focus()
+
+	return ConnectPage{
+		serverInput: ti,
+	}
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// Bubbletea Interface
+// /////////////////////////////////////////////////////////////////////////////
+
+func (p ConnectPage) Init() tea.Cmd {
+	return textinput.Blink
+}
+
+func (m ConnectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+	case tea.KeyMsg:
+		m.resetErr()
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
+			return m, tea.Quit
+		case tea.KeyEnter:
+			m.validate()
+			if m.err == "" {
+				m.waiting = true
+				return m, m.startBrowserAuth()
+			}
+
+		}
+	case AuthSuccessMsg:
+		return m, func() tea.Msg {
+			return viewtypes.Dashboard
+		}
+	}
+	m.serverInput, cmd = m.serverInput.Update(msg)
+	return m, cmd
+}
+
+func (p ConnectPage) View() string {
+	var b strings.Builder
+
+	if p.waiting {
+		b.WriteString("✨ Browser opened for authentication. Waiting for completion.")
+	} else {
+		b.WriteString("CONNECT TO SERVER\n\n")
+		b.WriteString(styles.FocusedStyle.Render("Server "))
+		b.WriteString(p.serverInput.View())
+		if p.err != "" {
+			b.WriteString(styles.ErrorStyle.Render("\n* " + p.err))
+		}
+		if p.status != "" {
+			b.WriteString(p.status)
+		}
+	}
+
+	logo := lipgloss.NewStyle().
+		Width(p.width).
+		Align(lipgloss.Center).
+		Render("🔥deeploy.sh\n")
+	card := components.Card(50).Render(b.String())
+	footer := lipgloss.NewStyle().
+		Width(p.width).
+		Align(lipgloss.Center).
+		Render("\n[ctrl+c] exit")
+
+	view := lipgloss.JoinVertical(0.5, logo, card, footer)
+	layout := lipgloss.Place(p.width, p.height, lipgloss.Center, lipgloss.Center, view)
+	return layout
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// Helper Methods
+// /////////////////////////////////////////////////////////////////////////////
+
+func (p *ConnectPage) validate() {
+	value := strings.TrimSpace(p.serverInput.Value())
+
+	// 1. Base-Check
+	if value == "" {
+		p.err = "Server required"
+		return
+	}
+
+	// 2. Format-Check (Host:Port)
+	host, port, err := net.SplitHostPort(value)
+	if err != nil {
+		p.err = "Invalid format. Use host:port (e.g. server:8090)"
+		return
+	}
+
+	// 3. Port-Validation
+	portNum, err := strconv.Atoi(port)
+	if err != nil || portNum < 1 || portNum > 65535 {
+		p.err = "Invalid port number"
+		return
+	}
+
+	// 4. Simple Host-Check
+	if host == "" {
+		p.err = "Invalid host"
+		return
+	}
+
+	// Connection test
+	timeout := time.Second * 3
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), timeout)
+	if err != nil {
+		p.err = "Server not reachable"
+		p.status = ""
+		return
+	}
+	defer conn.Close()
+}
+
+func (p *ConnectPage) resetErr() {
+	p.err = ""
 }
 
 // Starts a local server for ayth callback
@@ -107,132 +251,4 @@ func (m ConnectPage) startBrowserAuth() tea.Cmd {
 
 		return PushPageMsg{Page: NewDashboard()}
 	}
-}
-
-type ConnectPage struct {
-	serverInput textinput.Model
-	status      string
-	waiting     bool
-	width       int
-	height      int
-	err         string
-}
-
-func NewConnectPage() ConnectPage {
-	ti := textinput.New()
-	ti.Placeholder = "e.g. 123.45.67.89:8090"
-	ti.Focus()
-
-	return ConnectPage{
-		serverInput: ti,
-	}
-}
-
-func (p ConnectPage) Init() tea.Cmd {
-	return textinput.Blink
-}
-
-func (m ConnectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-	case tea.KeyMsg:
-		m.resetErr()
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
-			return m, tea.Quit
-		case tea.KeyEnter:
-			m.validate()
-			if m.err == "" {
-				m.waiting = true
-				return m, m.startBrowserAuth()
-			}
-
-		}
-	case AuthSuccessMsg:
-		return m, func() tea.Msg {
-			return viewtypes.Dashboard
-		}
-	}
-	m.serverInput, cmd = m.serverInput.Update(msg)
-	return m, cmd
-}
-
-func (p ConnectPage) View() string {
-	var b strings.Builder
-
-	if p.waiting {
-		b.WriteString("✨ Browser opened for authentication. Waiting for completion.")
-	} else {
-		b.WriteString("CONNECT TO SERVER\n\n")
-		b.WriteString(styles.FocusedStyle.Render("Server "))
-		b.WriteString(p.serverInput.View())
-		if p.err != "" {
-			b.WriteString(styles.ErrorStyle.Render("\n* " + p.err))
-		}
-		if p.status != "" {
-			b.WriteString(p.status)
-		}
-	}
-
-	logo := lipgloss.NewStyle().
-		Width(p.width).
-		Align(lipgloss.Center).
-		Render("🔥deeploy.sh\n")
-	card := components.Card(50).Render(b.String())
-	footer := lipgloss.NewStyle().
-		Width(p.width).
-		Align(lipgloss.Center).
-		Render("\n[ctrl+c] exit")
-
-	view := lipgloss.JoinVertical(0.5, logo, card, footer)
-	layout := lipgloss.Place(p.width, p.height, lipgloss.Center, lipgloss.Center, view)
-	return layout
-}
-
-func (p *ConnectPage) validate() {
-	value := strings.TrimSpace(p.serverInput.Value())
-
-	// 1. Base-Check
-	if value == "" {
-		p.err = "Server required"
-		return
-	}
-
-	// 2. Format-Check (Host:Port)
-	host, port, err := net.SplitHostPort(value)
-	if err != nil {
-		p.err = "Invalid format. Use host:port (e.g. server:8090)"
-		return
-	}
-
-	// 3. Port-Validation
-	portNum, err := strconv.Atoi(port)
-	if err != nil || portNum < 1 || portNum > 65535 {
-		p.err = "Invalid port number"
-		return
-	}
-
-	// 4. Simple Host-Check
-	if host == "" {
-		p.err = "Invalid host"
-		return
-	}
-
-	// Connection test
-	timeout := time.Second * 3
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), timeout)
-	if err != nil {
-		p.err = "Server not reachable"
-		p.status = ""
-		return
-	}
-	defer conn.Close()
-}
-
-func (p *ConnectPage) resetErr() {
-	p.err = ""
 }

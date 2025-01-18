@@ -5,6 +5,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// /////////////////////////////////////////////////////////////////////////////
+// Types & Messages
+// /////////////////////////////////////////////////////////////////////////////
+
 // App is like a stack of papers (pages). The top page is what you see.
 // Think of it like browser tabs or a deck of cards.
 type App struct {
@@ -22,6 +26,10 @@ type PushPageMsg struct {
 // Message to remove the top page and go back to previous
 // Example: Closing settings to go back to dashboard
 type PopPageMsg struct{}
+
+// /////////////////////////////////////////////////////////////////////////////
+// Constructors
+// /////////////////////////////////////////////////////////////////////////////
 
 // Create new empty app
 func NewApp() App {

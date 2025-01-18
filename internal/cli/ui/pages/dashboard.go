@@ -13,44 +13,29 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// /////////////////////////////////////////////////////////////////////////////
+// Types & Messages
+// /////////////////////////////////////////////////////////////////////////////
+
 type DashboardPage struct {
 	width   int
 	height  int
 	message string
 }
 
+type welcomeMessage string
+
+///////////////////////////////////////////////////////////////////////////////
+// Constructors
+///////////////////////////////////////////////////////////////////////////////
+
 func NewDashboard() DashboardPage {
 	return DashboardPage{}
 }
 
-type welcomeMessage string
-
-func getWelcomeMessage() tea.Msg {
-	config, err := config.LoadConfig()
-	if err != nil {
-		return viewtypes.InitConnect
-	}
-
-	r, err := http.NewRequest("POST", "http://"+config.Server+"/dashboard", nil)
-	if err != nil {
-		return viewtypes.InitConnect
-	}
-	r.Header.Set("Authorization", "Bearer "+config.Token)
-
-	client := http.Client{}
-	res, err := client.Do(r)
-	if err != nil {
-		return viewtypes.InitConnect
-	}
-	defer res.Body.Close()
-
-	result, err := io.ReadAll(res.Body)
-	if err != nil {
-		return viewtypes.InitConnect
-	}
-
-	return welcomeMessage(result)
-}
+// /////////////////////////////////////////////////////////////////////////////
+// Bubbletea Interface
+// /////////////////////////////////////////////////////////////////////////////
 
 func (p DashboardPage) Init() tea.Cmd {
 	return getWelcomeMessage
@@ -88,4 +73,35 @@ func (p DashboardPage) View() string {
 	view := lipgloss.JoinVertical(0.5, logo, card, footer)
 	layout := lipgloss.Place(p.width, p.height, lipgloss.Center, lipgloss.Center, view)
 	return layout
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// Helper Methods
+// /////////////////////////////////////////////////////////////////////////////
+
+func getWelcomeMessage() tea.Msg {
+	config, err := config.LoadConfig()
+	if err != nil {
+		return viewtypes.InitConnect
+	}
+
+	r, err := http.NewRequest("POST", "http://"+config.Server+"/dashboard", nil)
+	if err != nil {
+		return viewtypes.InitConnect
+	}
+	r.Header.Set("Authorization", "Bearer "+config.Token)
+
+	client := http.Client{}
+	res, err := client.Do(r)
+	if err != nil {
+		return viewtypes.InitConnect
+	}
+	defer res.Body.Close()
+
+	result, err := io.ReadAll(res.Body)
+	if err != nil {
+		return viewtypes.InitConnect
+	}
+
+	return welcomeMessage(result)
 }
