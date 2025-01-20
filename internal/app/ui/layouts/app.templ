@@ -6,9 +6,7 @@ import (
 
 templ AppLayout() {
 	@BaseLayout() {
-		<div
-			class="min-h-screen grid grid-rows-[auto_1fr]"
-		>
+		<div>
 			@modules.Navbar()
 			{ children... }
 			@modules.MadeWith()

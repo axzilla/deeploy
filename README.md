@@ -1,6 +1,6 @@
 # deeploy
 
-A next-gen deployment platform for terminal-loving devs. Ship apps with a sleek TUI or CLI - built for those who live and breathe the command line.
+Modern deployment platform with a terminal-first approach. Deploy and manage your infrastructure through a powerful TUI, built for developers who love CLIs.
 
 ## Features
 
@@ -19,36 +19,22 @@ A next-gen deployment platform for terminal-loving devs. Ship apps with a sleek 
 ## Quick Start
 
 ```bash
-# Install server
+# Install server on your VPS (Hetzner, DigitalOcean, etc.)
 curl -fsSL https://deeploy.sh/install.sh | sh
 
-# Install CLI tool
-brew install deeploy-cli
-# or
+# Install CLI/TUI client on your local machine
 curl -fsSL deeploy.sh/install-cli | sh
 
-# Connect to your server
-deeploy connect http://your-server:8090
+# Start deeploy
+deeploy
 ```
 
 ## Usage
 
 ```bash
-# Interactive TUI mode
+# Start the Terminal UI
 deeploy
-
-# Or use CLI commands
-deeploy deploy myapp
-deeploy logs myapp
-deeploy status
 ```
-
-## Inspiration
-
-Deeploy draws inspiration from popular open source deployment platforms:
-
-- [Coolify](https://coolify.io)
-- [Dokploy](https://dokploy.com)
 
 ## Current Status
 
@@ -63,8 +49,8 @@ This is a pre-alpha release. The platform is under active development with upcom
 
 ## Requirements
 
-- Linux server (Ubuntu 24.04 recommended)
-- Docker
+- Server: Linux VPS (Hetzner, DigitalOcean, etc.) with Docker
+- Client: Any machine for TUI client (macOS, Linux, Windows with WSL)
 
 ## Built With
 

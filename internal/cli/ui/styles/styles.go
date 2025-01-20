@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ColorPrimary = lipgloss.Color("105")
+	ColorPrimary = lipgloss.Color("204")
 	ColorError   = lipgloss.Color("9")
 
 	FocusedStyle        = lipgloss.NewStyle().Foreground(ColorPrimary)
