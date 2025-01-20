@@ -8,16 +8,21 @@ platforms=(
 )
 
 filename=""
+uname=$(tr "[:upper:]" "[:lower:]" <<< $(uname))
+
 for platform in "${platforms[@]}"; do
     platform_split=(${platform//\// })
     OS=${platform_split[0]}
     ARCH=${platform_split[1]}
-    if [[ $(uname) == "$OS" && $(uname -m) == "$ARCH" ]]; then
-        filename="deeploy-${OS}-${ARCH}"
+    if [[ "$uname" == "$OS" && $(uname -m) == "$ARCH" ]]; then
+      filename="deeploy-${OS}-${ARCH}"
+      break
     fi
 done
 
-downloadURL="https://github.com/axzillal/deeploy/releases/latest/download/${filename}"
-curl -LO "$downloadURL"
-chmod +x "$filename"
-sudo mv "$filename" /usr/local/bin/deeploy
+downloadURL="https://github.com/axzilla/deeploy/releases/latest/download/${filename}"
+appname="deeploy"
+curl -Lo "$appname" "$downloadURL"
+chmod +x "$appname"
+echo "Need permission to move deeploy binary into your OS path:"
+sudo mv "$appname" /usr/local/bin/deeploy
