@@ -4,7 +4,7 @@ go 1.23.3
 
 require (
 	github.com/a-h/templ v0.3.819
-	github.com/axzilla/templui v0.29.0
+	github.com/axzilla/templui v0.29.1
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.2.4
 	github.com/charmbracelet/lipgloss v1.0.0
