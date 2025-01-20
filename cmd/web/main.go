@@ -36,7 +36,7 @@ func SetupAssetsRoutes(mux *http.ServeMux) {
 		var fs http.Handler
 		if isDev {
 			w.Header().Set("Cache-Control", "no-store")
-			fs = http.FileServer(http.Dir("./internal/app/assets"))
+			fs = http.FileServer(http.Dir("./internal/web/assets"))
 		} else {
 			fs = http.FileServer(http.FS(assets.Assets))
 		}

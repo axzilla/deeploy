@@ -1598,20 +1598,6 @@ body {
   --tw-bg-opacity: 0.5;
 }
 
-.bg-gradient-to-b {
-  background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
-}
-
-.from-background {
-  --tw-gradient-from: hsl(var(--background) / 1) var(--tw-gradient-from-position);
-  --tw-gradient-to: hsl(var(--background) / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.to-secondary\/10 {
-  --tw-gradient-to: hsl(var(--secondary) / 0.1) var(--tw-gradient-to-position);
-}
-
 .object-cover {
   -o-object-fit: cover;
      object-fit: cover;
@@ -1815,11 +1801,6 @@ body {
   letter-spacing: -0.025em;
 }
 
-.\!text-red-900 {
-  --tw-text-opacity: 1 !important;
-  color: rgb(127 29 29 / var(--tw-text-opacity, 1)) !important;
-}
-
 .text-background {
   --tw-text-opacity: 1;
   color: hsl(var(--background) / var(--tw-text-opacity, 1));
@@ -1895,6 +1876,11 @@ body {
   color: rgb(239 68 68 / var(--tw-text-opacity, 1));
 }
 
+.text-red-900 {
+  --tw-text-opacity: 1;
+  color: rgb(127 29 29 / var(--tw-text-opacity, 1));
+}
+
 .text-secondary-foreground {
   --tw-text-opacity: 1;
   color: hsl(var(--secondary-foreground) / var(--tw-text-opacity, 1));
@@ -1908,16 +1894,6 @@ body {
 .text-yellow-500 {
   --tw-text-opacity: 1;
   color: rgb(234 179 8 / var(--tw-text-opacity, 1));
-}
-
-.text-red-600 {
-  --tw-text-opacity: 1;
-  color: rgb(220 38 38 / var(--tw-text-opacity, 1));
-}
-
-.text-red-300 {
-  --tw-text-opacity: 1;
-  color: rgb(252 165 165 / var(--tw-text-opacity, 1));
 }
 
 .underline {
