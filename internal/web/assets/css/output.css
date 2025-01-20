@@ -1876,11 +1876,6 @@ body {
   color: rgb(239 68 68 / var(--tw-text-opacity, 1));
 }
 
-.text-red-900 {
-  --tw-text-opacity: 1;
-  color: rgb(127 29 29 / var(--tw-text-opacity, 1));
-}
-
 .text-secondary-foreground {
   --tw-text-opacity: 1;
   color: hsl(var(--secondary-foreground) / var(--tw-text-opacity, 1));

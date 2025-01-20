@@ -24,5 +24,4 @@ downloadURL="https://github.com/axzilla/deeploy/releases/latest/download/${filen
 appname="deeploy"
 curl -Lo "$appname" "$downloadURL"
 chmod +x "$appname"
-echo "Need permission to move deeploy binary into your OS path:"
 sudo mv "$appname" /usr/local/bin/deeploy

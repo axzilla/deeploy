@@ -1,4 +1,4 @@
-package install
+package scripts
 
 import "embed"
 

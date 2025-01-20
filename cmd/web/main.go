@@ -7,6 +7,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/axzilla/deeploy/internal/app/install"
+	"github.com/axzilla/deeploy/internal/cli/scripts"
 	"github.com/axzilla/deeploy/internal/web/assets"
 	"github.com/axzilla/deeploy/internal/web/config"
 	"github.com/axzilla/deeploy/internal/web/ui/pages"
@@ -19,6 +20,16 @@ func main() {
 	mux.Handle("GET /", templ.Handler(pages.Landing()))
 	mux.Handle("GET /install.sh", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		file, err := install.InstallScript.ReadFile("install.sh")
+		if err != nil {
+			http.Error(w, "file not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Disposition", "attachment; filename=install.sh")
+		w.Write(file)
+	}))
+	mux.Handle("GET /install-cli.sh", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// file, err := install.InstallScript.ReadFile("install.sh")
+		file, err := scripts.InstallScript.ReadFile("install-cli.sh")
 		if err != nil {
 			http.Error(w, "file not found", http.StatusNotFound)
 			return
