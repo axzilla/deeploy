@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/axzilla/deeploy/internal/app/cookie"
@@ -22,7 +21,6 @@ func NewAuthMiddleware(userService services.UserServiceInterface) *AuthMiddleWar
 func getToken(r *http.Request) string {
 	// CLI token
 	authHeader := r.Header.Get("Authorization")
-	fmt.Println("GET TOKEN: ", authHeader)
 	const bearerPrefix = "Bearer "
 	if len(authHeader) > len(bearerPrefix) && authHeader[:len(bearerPrefix)] == bearerPrefix {
 		return authHeader[len(bearerPrefix):]

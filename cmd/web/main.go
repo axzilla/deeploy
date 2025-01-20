@@ -7,6 +7,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/axzilla/deeploy/internal/app/install"
+	"github.com/axzilla/deeploy/internal/cli/scripts"
 	"github.com/axzilla/deeploy/internal/web/assets"
 	"github.com/axzilla/deeploy/internal/web/config"
 	"github.com/axzilla/deeploy/internal/web/ui/pages"
@@ -26,6 +27,16 @@ func main() {
 		w.Header().Set("Content-Disposition", "attachment; filename=install.sh")
 		w.Write(file)
 	}))
+	mux.Handle("GET /install-cli.sh", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// file, err := install.InstallScript.ReadFile("install.sh")
+		file, err := scripts.InstallScript.ReadFile("install-cli.sh")
+		if err != nil {
+			http.Error(w, "file not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Disposition", "attachment; filename=install.sh")
+		w.Write(file)
+	}))
 	fmt.Println("Server is running on http://localhost:8090")
 	http.ListenAndServe(":8090", mux)
 }
@@ -36,7 +47,7 @@ func SetupAssetsRoutes(mux *http.ServeMux) {
 		var fs http.Handler
 		if isDev {
 			w.Header().Set("Cache-Control", "no-store")
-			fs = http.FileServer(http.Dir("./internal/app/assets"))
+			fs = http.FileServer(http.Dir("./internal/web/assets"))
 		} else {
 			fs = http.FileServer(http.FS(assets.Assets))
 		}

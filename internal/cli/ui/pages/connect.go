@@ -145,7 +145,7 @@ func (p *ConnectPage) validate() {
 	// 2. Format-Check (Host:Port)
 	host, port, err := net.SplitHostPort(value)
 	if err != nil {
-		p.err = "Invalid format. Use host:port (e.g. server:8090)"
+		p.err = "Invalid format (host:port)"
 		return
 	}
 

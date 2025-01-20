@@ -8,7 +8,6 @@ import (
 
 	"github.com/axzilla/deeploy/internal/cli/config"
 	"github.com/axzilla/deeploy/internal/cli/ui/components"
-	"github.com/axzilla/deeploy/internal/cli/viewtypes"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -82,25 +81,28 @@ func (p DashboardPage) View() string {
 func getWelcomeMessage() tea.Msg {
 	config, err := config.LoadConfig()
 	if err != nil {
-		return viewtypes.InitConnect
+		return PushPageMsg{Page: NewConnectPage()}
 	}
 
 	r, err := http.NewRequest("POST", "http://"+config.Server+"/dashboard", nil)
 	if err != nil {
-		return viewtypes.InitConnect
+		return PushPageMsg{Page: NewConnectPage()}
 	}
 	r.Header.Set("Authorization", "Bearer "+config.Token)
 
 	client := http.Client{}
 	res, err := client.Do(r)
 	if err != nil {
-		return viewtypes.InitConnect
+		return PushPageMsg{Page: NewConnectPage()}
+	}
+	if res.StatusCode == http.StatusUnauthorized {
+		return PushPageMsg{Page: NewConnectPage()}
 	}
 	defer res.Body.Close()
 
 	result, err := io.ReadAll(res.Body)
 	if err != nil {
-		return viewtypes.InitConnect
+		return PushPageMsg{Page: NewConnectPage()}
 	}
 
 	return welcomeMessage(result)

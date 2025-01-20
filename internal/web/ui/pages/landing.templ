@@ -1,30 +1,33 @@
 package pages
 
 import (
-	"github.com/axzilla/templui/pkg/components"
 	"github.com/axzilla/deeploy/internal/web/ui/layouts"
+	"github.com/axzilla/templui/pkg/components"
 )
 
 templ Landing() {
 	@layouts.BaseLayout() {
-		<div class="h-[calc(100vh-65px)] bg-gradient-to-b from-background to-secondary/10">
+		<div class="h-[calc(100vh-65px)]">
 			<div class="container mx-auto px-4">
 				<div class="flex flex-col items-center justify-center h-[calc(100vh-65px)] space-y-8">
 					<div class="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium animate-pulse">
-						Coming Soon
+						Pre-Alpha
 					</div>
-					<h1 class="text-4xl md:text-6xl font-bold tracking-tight">deeploy.sh</h1>
-					<p class="text-xl text-muted-foreground max-w-2xl">
-						A modern deployment platform. Simple, fast, and developer-friendly.
+					<h1 class="text-3xl text-center font-bold tracking-tight">
+						Modern Deployment.
+						Terminal First.
+					</h1>
+					<p class="text-xl text-muted-foreground max-w-2xl text-center">
+						Open-source platform to deploy and manage your infrastructure. Built for developers who love CLIs. Web UI coming soon.
 					</p>
-					<div class="w-full max-w-md flex flex-col gap-4">
+					<div class="w-full max-w-lg">
 						@components.Code(components.CodeProps{ShowCopyButton: true}) {
 							{ `curl -fsSL https://deeploy.sh/install.sh | bash` }
 						}
-						<p class="text-muted-foreground mx-auto text-xs">Pre-alpha version. Shows coming soon page after installation.</p>
+						<p class="text-muted-foreground mx-auto text-xs text-center mt-2">Server installation for your VPS (Hetzner, DigitalOcean, etc.)</p>
 					</div>
 					<div class="flex flex-col items-center gap-2">
-						<div class="flex flex-col sm:flex-row gap-4 mt-4">
+						<div class="flex flex-col sm:flex-row gap-2 mt-4">
 							@components.Button(components.ButtonProps{
 								Variant: "default",
 								Class:   "px-8",
