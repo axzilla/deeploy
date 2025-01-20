@@ -9,6 +9,10 @@ const config = {
   ],
   safelist: ["dark"],
   theme: {
+    fontFamily: {
+      sans: ["Inter", "system-ui", "sans-serif"], // Hauptschriftart
+      mono: ["JetBrains Mono", "monospace"], // Für Code-Bereiche
+    },
     container: {
       center: true,
       padding: "2rem",
@@ -57,7 +61,6 @@ const config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      fontFamily: {},
     },
   },
 };

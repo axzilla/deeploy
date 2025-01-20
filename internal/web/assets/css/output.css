@@ -107,7 +107,7 @@
 }
 
 /*
-! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com
+! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -1077,6 +1077,10 @@ body {
   max-width: 200px;
 }
 
+.max-w-lg {
+  max-width: 32rem;
+}
+
 .max-w-md {
   max-width: 28rem;
 }
@@ -1271,10 +1275,6 @@ body {
 
 .justify-start {
   justify-content: flex-start;
-}
-
-.justify-end {
-  justify-content: flex-end;
 }
 
 .justify-center {
@@ -1815,6 +1815,11 @@ body {
   letter-spacing: -0.025em;
 }
 
+.\!text-red-900 {
+  --tw-text-opacity: 1 !important;
+  color: rgb(127 29 29 / var(--tw-text-opacity, 1)) !important;
+}
+
 .text-background {
   --tw-text-opacity: 1;
   color: hsl(var(--background) / var(--tw-text-opacity, 1));
@@ -1903,6 +1908,16 @@ body {
 .text-yellow-500 {
   --tw-text-opacity: 1;
   color: rgb(234 179 8 / var(--tw-text-opacity, 1));
+}
+
+.text-red-600 {
+  --tw-text-opacity: 1;
+  color: rgb(220 38 38 / var(--tw-text-opacity, 1));
+}
+
+.text-red-300 {
+  --tw-text-opacity: 1;
+  color: rgb(252 165 165 / var(--tw-text-opacity, 1));
 }
 
 .underline {
@@ -2526,11 +2541,6 @@ body {
 
   .md\:text-5xl {
     font-size: 3rem;
-    line-height: 1;
-  }
-
-  .md\:text-6xl {
-    font-size: 3.75rem;
     line-height: 1;
   }
 
