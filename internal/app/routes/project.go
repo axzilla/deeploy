@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/axzilla/deeploy/internal/app/deeploy"
 	mw "github.com/axzilla/deeploy/internal/app/middleware"
-	apihandler "github.com/axzilla/deeploy/internal/cli/handler"
+	apihandler "github.com/axzilla/deeploy/internal/cli/handlers"
 	"github.com/axzilla/deeploy/internal/shared/repos"
 	"github.com/axzilla/deeploy/internal/shared/services"
 )
