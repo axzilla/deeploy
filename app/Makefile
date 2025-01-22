@@ -16,3 +16,10 @@ tailwind:
 
 dev:
 	make -j3 templ server tailwind
+
+cli-debug:
+	tmux new-window -n deeploy_debug
+	tmux send-keys -t deeploy_debug 'dlv debug --headless --api-version=2 --listen=127.0.0.1:43000 cmd/cli/main.go' C-m
+
+cli-log:
+	tail -f debug.log
