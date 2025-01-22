@@ -3,10 +3,10 @@ package services
 import (
 	"github.com/axzilla/deeploy/internal/app/auth"
 	"github.com/axzilla/deeploy/internal/app/errs"
-	"github.com/axzilla/deeploy/internal/app/forms"
 	"github.com/axzilla/deeploy/internal/app/jwt"
-	"github.com/axzilla/deeploy/internal/app/models"
-	"github.com/axzilla/deeploy/internal/app/repos"
+	"github.com/axzilla/deeploy/internal/shared/forms"
+	"github.com/axzilla/deeploy/internal/shared/models"
+	"github.com/axzilla/deeploy/internal/shared/repos"
 	"github.com/google/uuid"
 )
 

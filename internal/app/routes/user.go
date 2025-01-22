@@ -4,8 +4,8 @@ import (
 	"github.com/axzilla/deeploy/internal/app/deeploy"
 	"github.com/axzilla/deeploy/internal/app/handler"
 	mw "github.com/axzilla/deeploy/internal/app/middleware"
-	"github.com/axzilla/deeploy/internal/app/repos"
-	"github.com/axzilla/deeploy/internal/app/services"
+	"github.com/axzilla/deeploy/internal/shared/repos"
+	"github.com/axzilla/deeploy/internal/shared/services"
 )
 
 func User(app deeploy.App) {

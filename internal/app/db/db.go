@@ -28,6 +28,12 @@ func Init() (*sql.DB, error) {
 		return nil, err
 	}
 
+	// Enable "Foreign Keys"
+	_, err = db.Exec("PRAGMA foreign_keys=ON")
+	if err != nil {
+		return nil, err
+	}
+
 	// Enable Write-Ahead Logging (WAL) mode for better performance and concurrency
 	_, err = db.Exec("PRAGMA journal_mode=WAL")
 	if err != nil {

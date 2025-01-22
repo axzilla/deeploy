@@ -6,8 +6,8 @@ import (
 
 	"github.com/axzilla/deeploy/internal/app/cookie"
 	"github.com/axzilla/deeploy/internal/app/jwt"
-	"github.com/axzilla/deeploy/internal/app/services"
 	"github.com/axzilla/deeploy/internal/app/ui/pages"
+	"github.com/axzilla/deeploy/internal/shared/services"
 )
 
 type AuthMiddleWare struct {

@@ -3,7 +3,7 @@ package repos
 import (
 	"database/sql"
 
-	"github.com/axzilla/deeploy/internal/app/models"
+	"github.com/axzilla/deeploy/internal/shared/models"
 )
 
 type UserRepoInterface interface {

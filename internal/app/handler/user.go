@@ -7,9 +7,9 @@ import (
 
 	"github.com/axzilla/deeploy/internal/app/cookie"
 	"github.com/axzilla/deeploy/internal/app/errs"
-	"github.com/axzilla/deeploy/internal/app/forms"
-	"github.com/axzilla/deeploy/internal/app/services"
 	"github.com/axzilla/deeploy/internal/app/ui/pages"
+	"github.com/axzilla/deeploy/internal/shared/forms"
+	"github.com/axzilla/deeploy/internal/shared/services"
 )
 
 type UserHandler struct {
