@@ -21,7 +21,7 @@ func Project(app deeploy.App) {
 	app.Router.HandleFunc("POST /api/projects", auth.Auth(apiProjectHandler.Create))
 	app.Router.HandleFunc("GET /api/projects/{id}", auth.Auth(apiProjectHandler.Project))
 	app.Router.HandleFunc("GET /api/projects", auth.Auth(apiProjectHandler.ProjectsByUser))
-	app.Router.HandleFunc("PATCH /api/projects/{id}", auth.Auth(apiProjectHandler.Update))
+	app.Router.HandleFunc("PUT /api/projects", auth.Auth(apiProjectHandler.Update))
 	app.Router.HandleFunc("DELETE /api/projects/{id}", auth.Auth(apiProjectHandler.Delete))
 
 	// Web coming soon

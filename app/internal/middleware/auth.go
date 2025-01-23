@@ -50,7 +50,7 @@ func (m *AuthMiddleWare) Auth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user", user)
+		ctx := context.WithValue(r.Context(), "user", user.ToDTO())
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }

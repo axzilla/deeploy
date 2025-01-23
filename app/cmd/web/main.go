@@ -21,11 +21,12 @@ func main() {
 	mux := http.NewServeMux()
 	app := deeploy.New(mux, db)
 
-	routes.Base(app)
 	routes.Assets(app)
+	routes.Base(app)
 	routes.User(app)
-	routes.Project(app)
 	routes.Dashboard(app)
+	routes.Project(app)
+	routes.Pod(app)
 
 	fmt.Println("Server is running on http://localhost:8090")
 	http.ListenAndServe(":8090", mux)
