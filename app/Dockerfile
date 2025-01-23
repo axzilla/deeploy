@@ -3,7 +3,7 @@ FROM golang:1.23-alpine AS build
 WORKDIR /app
 
 # Copy the source code
-COPY . .
+COPY app .
 
 # Install templ
 RUN go install github.com/a-h/templ/cmd/templ@latest
@@ -15,7 +15,7 @@ RUN templ generate
 RUN apk add --no-cache gcc musl-dev
 
 # Build the application
-RUN CGO_ENABLED=1 GOOS=linux go build -o main ./cmd/app/main.go
+RUN CGO_ENABLED=1 GOOS=linux go build -o main cmd/web/main.go
 # RUN CGO_ENABLED=1 GOOS=linux go build -o cli ./cmd/cli/main.go
 
 # Deploy-Stage
