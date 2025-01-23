@@ -1,16 +1,35 @@
-package repos
+package data
 
 import (
 	"database/sql"
-
-	"github.com/axzilla/deeploy/internal/models"
+	"time"
 )
+
+type User struct {
+	ID        string
+	Email     string
+	Password  string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type UserDTO struct {
+	ID    string
+	Email string
+}
+
+func (u *User) ToDTO() *UserDTO {
+	return &UserDTO{
+		ID:    u.ID,
+		Email: u.Email,
+	}
+}
 
 type UserRepoInterface interface {
 	CountUsers() (int, error)
-	CreateUser(user *models.UserDB) error
-	GetUserByEmail(email string) (*models.UserDB, error)
-	GetUserByID(id string) (*models.UserDB, error)
+	CreateUser(user *User) error
+	GetUserByEmail(email string) (*User, error)
+	GetUserByID(id string) (*User, error)
 }
 
 type UserRepo struct {
@@ -36,7 +55,7 @@ func (r *UserRepo) CountUsers() (int, error) {
 	return count, nil
 }
 
-func (m *UserRepo) CreateUser(user *models.UserDB) error {
+func (m *UserRepo) CreateUser(user *User) error {
 	query := `
 		INSERT INTO users (id, email, password)
 		VALUES(?, ?, ?)`
@@ -49,8 +68,8 @@ func (m *UserRepo) CreateUser(user *models.UserDB) error {
 	return nil
 }
 
-func (r *UserRepo) GetUserByEmail(email string) (*models.UserDB, error) {
-	user := &models.UserDB{}
+func (r *UserRepo) GetUserByEmail(email string) (*User, error) {
+	user := &User{}
 
 	query := `
 		SELECT id, email, password, created_at, updated_at 
@@ -73,8 +92,8 @@ func (r *UserRepo) GetUserByEmail(email string) (*models.UserDB, error) {
 	return user, nil
 }
 
-func (r *UserRepo) GetUserByID(id string) (*models.UserDB, error) {
-	user := &models.UserDB{}
+func (r *UserRepo) GetUserByID(id string) (*User, error) {
+	user := &User{}
 
 	query := `
 		SELECT id, email, password, created_at, updated_at 

@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/axzilla/deeploy/internal/models"
+	"github.com/axzilla/deeploy/internal/data"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,8 +17,8 @@ func ComparePassword(hash, password string) bool {
 	return err == nil
 }
 
-func GetUser(ctx context.Context) *models.UserApp {
-	user, ok := ctx.Value("user").(*models.UserApp)
+func GetUser(ctx context.Context) *data.UserDTO {
+	user, ok := ctx.Value("user").(*data.UserDTO)
 	if ok {
 		return user
 	}

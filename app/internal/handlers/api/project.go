@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/axzilla/deeploy/internal/auth"
+	"github.com/axzilla/deeploy/internal/data"
 	"github.com/axzilla/deeploy/internal/forms"
-	"github.com/axzilla/deeploy/internal/models"
 	"github.com/axzilla/deeploy/internal/services"
 )
 
@@ -78,7 +78,7 @@ func (h *ProjectHandler) ProjectsByUser(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *ProjectHandler) Update(w http.ResponseWriter, r *http.Request) {
-	var project models.ProjectDB
+	var project data.Project
 
 	err := json.NewDecoder(r.Body).Decode(&project)
 	if err != nil {
@@ -95,7 +95,7 @@ func (h *ProjectHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(project.ToProjectApp())
+	json.NewEncoder(w).Encode(project.ToDTO())
 }
 
 func (h *ProjectHandler) Delete(w http.ResponseWriter, r *http.Request) {

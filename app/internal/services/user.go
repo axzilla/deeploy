@@ -2,26 +2,25 @@ package services
 
 import (
 	"github.com/axzilla/deeploy/internal/auth"
+	"github.com/axzilla/deeploy/internal/data"
 	"github.com/axzilla/deeploy/internal/errs"
 	"github.com/axzilla/deeploy/internal/forms"
 	"github.com/axzilla/deeploy/internal/jwt"
-	"github.com/axzilla/deeploy/internal/models"
-	"github.com/axzilla/deeploy/internal/repos"
 	"github.com/google/uuid"
 )
 
 type UserServiceInterface interface {
 	Register(form forms.RegisterForm) (string, error)
 	Login(email, password string) (string, error)
-	GetUserByID(id string) (*models.UserApp, error)
+	GetUserByID(id string) (*data.User, error)
 	HasUser() (bool, error)
 }
 
 type UserService struct {
-	repo repos.UserRepoInterface
+	repo data.UserRepoInterface
 }
 
-func NewUserService(repo *repos.UserRepo) *UserService {
+func NewUserService(repo *data.UserRepo) *UserService {
 	return &UserService{repo: repo}
 }
 
@@ -46,16 +45,16 @@ func (s *UserService) Register(form forms.RegisterForm) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	userDB := &models.UserDB{
+	user := &data.User{
 		ID:       uuid.New().String(),
 		Email:    form.Email,
 		Password: hashedPwd,
 	}
-	err = s.repo.CreateUser(userDB)
+	err = s.repo.CreateUser(user)
 	if err != nil {
 		return "", err
 	}
-	token, err := jwt.CreateToken(userDB.ID)
+	token, err := jwt.CreateToken(user.ID)
 	if err != nil {
 		return "", err
 	}
@@ -63,27 +62,27 @@ func (s *UserService) Register(form forms.RegisterForm) (string, error) {
 }
 
 func (s *UserService) Login(email, password string) (string, error) {
-	userDB, err := s.repo.GetUserByEmail(email)
+	user, err := s.repo.GetUserByEmail(email)
 	if err != nil {
 		return "", err
 	}
-	if userDB == nil {
+	if user == nil {
 		return "", errs.ErrInvalidCredentials
 	}
-	if !auth.ComparePassword(userDB.Password, password) {
+	if !auth.ComparePassword(user.Password, password) {
 		return "", errs.ErrInvalidCredentials
 	}
-	token, err := jwt.CreateToken(userDB.ID)
+	token, err := jwt.CreateToken(user.ID)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func (s *UserService) GetUserByID(id string) (*models.UserApp, error) {
-	userDB, err := s.repo.GetUserByID(id)
+func (s *UserService) GetUserByID(id string) (*data.User, error) {
+	user, err := s.repo.GetUserByID(id)
 	if err != nil {
 		return nil, err
 	}
-	return userDB.ToUserApp(), nil
+	return user, nil
 }

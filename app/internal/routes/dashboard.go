@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/axzilla/deeploy/internal/data"
 	"github.com/axzilla/deeploy/internal/deeploy"
-	"github.com/axzilla/deeploy/internal/repos"
 	"github.com/axzilla/deeploy/internal/services"
 
 	mw "github.com/axzilla/deeploy/internal/middleware"
 )
 
 func Dashboard(app deeploy.App) {
-	userRepo := repos.NewUserRepo(app.DB)
+	userRepo := data.NewUserRepo(app.DB)
 	userService := services.NewUserService(userRepo)
 
 	auth := mw.NewAuthMiddleware(userService)

@@ -1,11 +1,9 @@
-package repos
+package data
 
 import (
 	"database/sql"
 	"errors"
 	"time"
-
-	"github.com/axzilla/deeploy/internal/models"
 )
 
 type Project struct {
@@ -17,11 +15,27 @@ type Project struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type ProjectDTO struct {
+	ID          string `json:"id"`
+	UserID      string `json:"user_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+func (u *Project) ToDTO() *ProjectDTO {
+	return &ProjectDTO{
+		ID:          u.ID,
+		UserID:      u.UserID,
+		Title:       u.Title,
+		Description: u.Description,
+	}
+}
+
 type ProjectRepoInterface interface {
-	Create(project *models.ProjectDB) error
-	Project(id string) (*models.ProjectDB, error)
-	ProjectsByUser(id string) ([]models.ProjectDB, error)
-	Update(project models.ProjectDB) error
+	Create(project *Project) error
+	Project(id string) (*Project, error)
+	ProjectsByUser(id string) ([]Project, error)
+	Update(project Project) error
 	Delete(id string) error
 }
 
@@ -33,7 +47,7 @@ func NewProjectRepo(db *sql.DB) *ProjectRepo {
 	return &ProjectRepo{db: db}
 }
 
-func (m *ProjectRepo) Create(project *models.ProjectDB) error {
+func (m *ProjectRepo) Create(project *Project) error {
 	query := `
 		INSERT INTO projects (id, user_id, title, description)
 		VALUES(?, ?, ?, ?)`
@@ -46,8 +60,8 @@ func (m *ProjectRepo) Create(project *models.ProjectDB) error {
 	return nil
 }
 
-func (r *ProjectRepo) Project(id string) (*models.ProjectDB, error) {
-	project := &models.ProjectDB{}
+func (r *ProjectRepo) Project(id string) (*Project, error) {
+	project := &Project{}
 
 	query := `
 		SELECT id, user_id, title, description, created_at, updated_at 
@@ -71,8 +85,8 @@ func (r *ProjectRepo) Project(id string) (*models.ProjectDB, error) {
 	return project, nil
 }
 
-func (r *ProjectRepo) ProjectsByUser(id string) ([]models.ProjectDB, error) {
-	projects := []models.ProjectDB{}
+func (r *ProjectRepo) ProjectsByUser(id string) ([]Project, error) {
+	projects := []Project{}
 
 	query := `
 		SELECT id, user_id, title, description, created_at, updated_at 
@@ -89,7 +103,7 @@ func (r *ProjectRepo) ProjectsByUser(id string) ([]models.ProjectDB, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		p := &models.ProjectDB{}
+		p := &Project{}
 		err := rows.Scan(
 			&p.ID,
 			&p.UserID,
@@ -106,7 +120,7 @@ func (r *ProjectRepo) ProjectsByUser(id string) ([]models.ProjectDB, error) {
 	return projects, nil
 }
 
-func (r *ProjectRepo) Update(project models.ProjectDB) error {
+func (r *ProjectRepo) Update(project Project) error {
 	query := `
 		UPDATE projects
 		SET title = ?, description = ?
