@@ -20,7 +20,7 @@ for platform in "${platforms[@]}"; do
     output_name="deeploy-${GOOS}-${GOARCH}"
     echo "Building release/$output_name..."
     env GOOS=$GOOS GOARCH=$GOARCH go build \
-      -C cmd/cli \
+      -C app/cmd/tui \
       -ldflags "-X github.com/axzilla/deeploy/commands.Version=$version" \
       -o release/$output_name
     if [ $? -ne 0 ]; then
