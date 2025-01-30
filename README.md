@@ -1,6 +1,8 @@
 # deeploy
 
-Modern deployment platform with a terminal-first approach. Deploy and manage your infrastructure through a powerful TUI, built for developers who love CLIs.
+Modern Deployment. Terminal First.
+
+Deploy with an elegant TUI. For developers who live in the terminal.
 
 ## Features
 
