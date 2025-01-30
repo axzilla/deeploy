@@ -1,5 +1,7 @@
 # deeploy
 
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/axzilla?style=social&label=♥️%20Sponsor)](https://github.com/sponsors/axzilla)
+
 Modern Deployment. Terminal First.
 
 Deploy with a sleek TUI. For developers who live in the terminal.
