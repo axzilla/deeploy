@@ -1,6 +1,6 @@
 # deeploy
 
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/axzilla?style=social)](https://github.com/sponsors/axzilla)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/axzilla?style=social&label=♥️%20Sponsor)](https://github.com/sponsors/axzilla)
 
 Modern Deployment. Terminal First.
 
