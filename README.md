@@ -2,7 +2,7 @@
 
 Modern Deployment. Terminal First.
 
-Deploy with an elegant TUI. For developers who live in the terminal.
+Deploy with a sleek TUI. For developers who live in the terminal.
 
 ## Features
 
