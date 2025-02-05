@@ -118,7 +118,7 @@ func (p ConnectPage) View() string {
 		Width(p.width).
 		Align(lipgloss.Center).
 		Render("🔥deeploy.sh\n")
-	card := components.Card(50).Render(b.String())
+	card := components.Card(components.CardProps{Width: 50}).Render(b.String())
 
 	view := lipgloss.JoinVertical(0.5, logo, card)
 	layout := lipgloss.Place(p.width, p.height, lipgloss.Center, lipgloss.Center, view)

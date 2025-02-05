@@ -169,7 +169,10 @@ func (a App) View() string {
 		}
 	}
 
-	footerCard := components.Card(a.width - components.Card(a.width).GetHorizontalBorderSize()).Render(footer.String())
+	footerCard := components.Card(components.CardProps{
+		Width:   a.width,
+		Padding: []int{0, 1},
+	}).Render(footer.String())
 
 	view := lipgloss.JoinVertical(lipgloss.Center, main, footerCard)
 

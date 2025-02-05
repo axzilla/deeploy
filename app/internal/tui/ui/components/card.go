@@ -5,10 +5,21 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func Card(width int) lipgloss.Style {
+type CardProps struct {
+	Width   int
+	Padding []int
+}
+
+func Card(p CardProps) lipgloss.Style {
+	baseStyle := lipgloss.NewStyle().
+		Width(p.Width).
+		Border(lipgloss.RoundedBorder())
+
+	actualWidth := p.Width - baseStyle.GetHorizontalBorderSize()
+
 	return lipgloss.NewStyle().
-		Width(width).
-		Padding(1, 2).
+		Width(actualWidth).
+		Padding(p.Padding...).
 		Border(lipgloss.RoundedBorder())
 }
 

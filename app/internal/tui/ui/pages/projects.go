@@ -75,14 +75,14 @@ func (p ProjectPage) View() string {
 		cards = append(cards, components.ErrorCard(30).Render(p.err.Error()))
 	} else {
 		for _, project := range p.projects {
-			cards = append(cards, components.Card(30).Render(project.Title))
+			cards = append(cards, components.Card(components.CardProps{Width: 30}).Render(project.Title))
 		}
 	}
 
 	projectsView := lipgloss.JoinVertical(0.5, cards...)
 
 	if len(cards) == 0 {
-		projectsView = components.Card(30).Align(lipgloss.Position(0.5)).Render(styles.FocusedStyle.Render("No projects yet"))
+		projectsView = components.Card(components.CardProps{Width: 30}).Align(lipgloss.Position(0.5)).Render(styles.FocusedStyle.Render("No projects yet"))
 	}
 
 	view := lipgloss.JoinVertical(0.5, logo, projectsView)
