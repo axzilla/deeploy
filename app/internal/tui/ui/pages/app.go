@@ -1,8 +1,13 @@
 package pages
 
 import (
+	"strings"
+
 	"github.com/axzilla/deeploy/internal/tui/config"
+	"github.com/axzilla/deeploy/internal/tui/ui/components"
+	"github.com/axzilla/deeploy/internal/tui/ui/styles"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -36,6 +41,7 @@ func NewApp() App {
 	return App{
 		stack: make([]tea.Model, 0),
 	}
+
 }
 
 // Called when app starts - we wait for window size before creating pages
@@ -47,7 +53,7 @@ func (a App) Init() tea.Cmd {
 func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Handle quit (ctrl+c, esc)
 	if msg, ok := msg.(tea.KeyMsg); ok {
-		if msg.Type == tea.KeyCtrlC || msg.Type == tea.KeyEsc {
+		if msg.String() == "q" {
 			return a, tea.Quit
 		}
 	}
@@ -134,12 +140,40 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
+type FooterMenuItem struct {
+	Key  string
+	Desc string
+}
+
 // Shows current (top) page
 func (a App) View() string {
 	if len(a.stack) == 0 {
 		return "Loading..."
 	}
-	return a.stack[len(a.stack)-1].View()
+
+	main := a.stack[len(a.stack)-1].View()
+
+	footerMenuItems := []FooterMenuItem{
+		{Key: "q", Desc: "quit"},
+		{Key: "esc", Desc: "back"},
+	}
+
+	var footer strings.Builder
+
+	for i, v := range footerMenuItems {
+		footer.WriteString(v.Key)
+		footer.WriteString(" ")
+		footer.WriteString(styles.BlurredStyle.Render(v.Desc))
+		if len(footerMenuItems)-1 != i {
+			footer.WriteString(" • ")
+		}
+	}
+
+	footerCard := components.Card(a.width - components.Card(a.width).GetHorizontalBorderSize()).Render(footer.String())
+
+	view := lipgloss.JoinVertical(lipgloss.Center, main, footerCard)
+
+	return view
 }
 
 // Examples of when to use Push/Pop:
