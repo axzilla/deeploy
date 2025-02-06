@@ -50,7 +50,11 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "n":
 			return p, func() tea.Msg {
-				return PushPageMsg{Page: NewProjectAddPage()}
+				return PushPageMsg{Page: NewProjectFormPage(nil)}
+			}
+		case "e":
+			return p, func() tea.Msg {
+				return PushPageMsg{Page: NewProjectFormPage(&p.projects[p.selectedIndex])}
 			}
 		case "down", "j":
 			if p.selectedIndex == len(p.projects)-1 {
@@ -74,9 +78,16 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case projectsMsg:
 		p.projects = msg
 		return p, nil
-	case projectAddedMsg:
+	case projectCreatedMsg:
 		p.projects = append(p.projects, data.ProjectDTO(msg))
 		return p, nil
+	case projectUpdatedMsg:
+		project := msg
+		for i, v := range p.projects {
+			if v.ID == project.ID {
+				p.projects[i] = data.ProjectDTO(project)
+			}
+		}
 	}
 	return p, nil
 }
@@ -92,7 +103,10 @@ func (p ProjectPage) View() string {
 		cards = append(cards, components.ErrorCard(30).Render(p.err.Error()))
 	} else {
 		for i, project := range p.projects {
-			props := components.CardProps{Width: 30}
+			props := components.CardProps{
+				Width:   30,
+				Padding: []int{0, 1},
+			}
 			if p.selectedIndex == i {
 				props.BorderForeground = styles.ColorPrimary
 			}

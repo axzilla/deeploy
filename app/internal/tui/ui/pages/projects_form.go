@@ -16,37 +16,46 @@ import (
 // Types & Messages
 // /////////////////////////////////////////////////////////////////////////////
 
-type ProjectAddPage struct {
+type ProjectFormPage struct {
 	titleInput textinput.Model
+	project    *data.ProjectDTO
 	width      int
 	height     int
 }
 
-type projectAddedMsg data.ProjectDTO
+type projectCreatedMsg data.ProjectDTO
+type projectUpdatedMsg data.ProjectDTO
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructors
 ///////////////////////////////////////////////////////////////////////////////
 
-func NewProjectAddPage() ProjectAddPage {
+func NewProjectFormPage(project *data.ProjectDTO) ProjectFormPage {
 	titleInput := textinput.New()
 	titleInput.Focus()
 	titleInput.Placeholder = "Title"
+	if project != nil {
+		titleInput.SetValue(project.Title)
+	}
 
-	return ProjectAddPage{
+	projectFormPage := ProjectFormPage{
 		titleInput: titleInput,
 	}
+	if project != nil {
+		projectFormPage.project = project
+	}
+	return projectFormPage
 }
 
 // /////////////////////////////////////////////////////////////////////////////
 // Bubbletea Interface
 // /////////////////////////////////////////////////////////////////////////////
 
-func (p ProjectAddPage) Init() tea.Cmd {
+func (p ProjectFormPage) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (p ProjectAddPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (p ProjectFormPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -55,7 +64,7 @@ func (p ProjectAddPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if len(p.titleInput.Value()) > 0 {
 				return p, tea.Batch(
-					p.AddProject,
+					p.Submit,
 					func() tea.Msg { return PopPageMsg{} },
 				)
 			}
@@ -72,7 +81,7 @@ func (p ProjectAddPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return p, cmd
 }
 
-func (p ProjectAddPage) View() string {
+func (p ProjectFormPage) View() string {
 	logo := lipgloss.NewStyle().
 		Width(p.width).
 		Align(lipgloss.Center).
@@ -93,11 +102,18 @@ func (p ProjectAddPage) View() string {
 // Helper Methods
 // /////////////////////////////////////////////////////////////////////////////
 
-func (p ProjectAddPage) HasFocusedInput() bool {
+func (p ProjectFormPage) HasFocusedInput() bool {
 	return p.titleInput.Focused()
 }
 
-func (p ProjectAddPage) AddProject() tea.Msg {
+func (p ProjectFormPage) Submit() tea.Msg {
+	if p.project != nil {
+		return p.UpdateProject()
+	}
+	return p.CreateProject()
+}
+
+func (p ProjectFormPage) CreateProject() tea.Msg {
 	postData := struct {
 		Title string
 	}{
@@ -118,9 +134,32 @@ func (p ProjectAddPage) AddProject() tea.Msg {
 	var project data.ProjectDTO
 	err = json.NewDecoder(res.Body).Decode(&project)
 	if err != nil {
-		log.Println("xxx: ", err)
 		return nil
 	}
 
-	return projectAddedMsg(project)
+	return projectCreatedMsg(project)
+}
+
+func (p ProjectFormPage) UpdateProject() tea.Msg {
+	postData := p.project
+	postData.Title = p.titleInput.Value()
+
+	res, err := utils.Request(utils.RequestProps{
+		Method: "PUT",
+		URL:    "/projects",
+		Data:   postData,
+	})
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer res.Body.Close()
+
+	var project data.ProjectDTO
+	err = json.NewDecoder(res.Body).Decode(&project)
+	if err != nil {
+		return nil
+	}
+
+	return projectUpdatedMsg(project)
 }
