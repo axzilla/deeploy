@@ -6,8 +6,9 @@ import (
 )
 
 type CardProps struct {
-	Width   int
-	Padding []int
+	Width            int
+	Padding          []int
+	BorderForeground lipgloss.TerminalColor
 }
 
 func Card(p CardProps) lipgloss.Style {
@@ -20,7 +21,8 @@ func Card(p CardProps) lipgloss.Style {
 	return lipgloss.NewStyle().
 		Width(actualWidth).
 		Padding(p.Padding...).
-		Border(lipgloss.RoundedBorder())
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(p.BorderForeground)
 }
 
 func ErrorCard(width int) lipgloss.Style {

@@ -17,11 +17,12 @@ import (
 // /////////////////////////////////////////////////////////////////////////////
 
 type ProjectPage struct {
-	width    int
-	height   int
-	message  string
-	projects []data.ProjectDTO
-	err      error
+	width         int
+	height        int
+	message       string
+	projects      []data.ProjectDTO
+	selectedIndex int
+	err           error
 }
 
 type errMsg error
@@ -46,9 +47,22 @@ func (p ProjectPage) Init() tea.Cmd {
 func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.Type == tea.KeyEsc {
+		switch msg.String() {
+		case "n":
 			return p, func() tea.Msg {
-				return PopPageMsg{}
+				return PushPageMsg{Page: NewProjectAddPage()}
+			}
+		case "down", "j":
+			if p.selectedIndex == len(p.projects)-1 {
+				p.selectedIndex = 0
+			} else {
+				p.selectedIndex++
+			}
+		case "up", "k":
+			if p.selectedIndex == 0 {
+				p.selectedIndex = len(p.projects) - 1
+			} else {
+				p.selectedIndex--
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -59,6 +73,9 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		p.err = msg
 	case projectsMsg:
 		p.projects = msg
+		return p, nil
+	case projectAddedMsg:
+		p.projects = append(p.projects, data.ProjectDTO(msg))
 		return p, nil
 	}
 	return p, nil
@@ -74,8 +91,12 @@ func (p ProjectPage) View() string {
 	if p.err != nil {
 		cards = append(cards, components.ErrorCard(30).Render(p.err.Error()))
 	} else {
-		for _, project := range p.projects {
-			cards = append(cards, components.Card(components.CardProps{Width: 30}).Render(project.Title))
+		for i, project := range p.projects {
+			props := components.CardProps{Width: 30}
+			if p.selectedIndex == i {
+				props.BorderForeground = styles.ColorPrimary
+			}
+			cards = append(cards, components.Card(props).Render(project.Title))
 		}
 	}
 

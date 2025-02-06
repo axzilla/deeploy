@@ -53,7 +53,9 @@ func (p DashboardPage) View() string {
 		Width(p.width).
 		Align(lipgloss.Center).
 		Render("🔥deeploy.sh\n")
-	menu := components.Card(components.CardProps{}).Render("[P]rojects [S]ettings")
+	menu := components.Card(components.CardProps{
+		Padding: []int{0, 2},
+	}).Render("[P]rojects [S]ettings")
 
 	view := lipgloss.JoinVertical(0.5, logo, menu)
 

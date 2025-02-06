@@ -14,6 +14,10 @@ import (
 // Types & Messages
 // /////////////////////////////////////////////////////////////////////////////
 
+type HasInputView interface {
+	HasFocusedInput() bool
+}
+
 // App is like a stack of papers (pages). The top page is what you see.
 // Think of it like browser tabs or a deck of cards.
 type App struct {
@@ -53,9 +57,23 @@ func (a App) Init() tea.Cmd {
 func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Handle quit (ctrl+c, esc)
 	if msg, ok := msg.(tea.KeyMsg); ok {
-		if msg.String() == "q" {
+		if msg.Type == tea.KeyCtrlC {
 			return a, tea.Quit
 		}
+
+		currentPage := a.stack[len(a.stack)-1]
+		if page, ok := currentPage.(HasInputView); ok && page.HasFocusedInput() {
+			// this disable "q"
+		} else if msg.String() == "q" {
+			return a, tea.Quit
+		}
+
+		if msg.Type == tea.KeyEsc {
+			return a, func() tea.Msg {
+				return PopPageMsg{}
+			}
+		}
+
 	}
 
 	switch msg := msg.(type) {
