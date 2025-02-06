@@ -56,6 +56,10 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return p, func() tea.Msg {
 				return PushPageMsg{Page: NewProjectFormPage(&p.projects[p.selectedIndex])}
 			}
+		case "d":
+			return p, func() tea.Msg {
+				return PushPageMsg{Page: NewProjectDeletePage(&p.projects[p.selectedIndex])}
+			}
 		case "down", "j":
 			if p.selectedIndex == len(p.projects)-1 {
 				p.selectedIndex = 0
@@ -86,8 +90,21 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		for i, v := range p.projects {
 			if v.ID == project.ID {
 				p.projects[i] = data.ProjectDTO(project)
+				break
 			}
 		}
+	case projectDeleteMsg:
+		project := msg
+		var index int
+		for i, v := range p.projects {
+			if v.ID == project.ID {
+				index = i
+				break
+			}
+		}
+		p.projects = append(p.projects[:index], p.projects[index+1:]...)
+		p.selectedIndex--
+		return p, nil
 	}
 	return p, nil
 }
