@@ -32,9 +32,12 @@ type HasInputView interface {
 }
 
 type App struct {
-	stack  []tea.Model
-	width  int
-	height int
+	stack         []tea.Model
+	projectsStack []tea.Model
+	settingsStack []tea.Model
+	activeArea    ActiveArea
+	width         int
+	height        int
 }
 
 type PushPageMsg struct {

@@ -7,6 +7,7 @@ import (
 
 type CardProps struct {
 	Width            int
+	Height           int
 	Padding          []int
 	BorderForeground lipgloss.TerminalColor
 }
@@ -14,12 +15,15 @@ type CardProps struct {
 func Card(p CardProps) lipgloss.Style {
 	baseStyle := lipgloss.NewStyle().
 		Width(p.Width).
+		Height(p.Height).
 		Border(lipgloss.RoundedBorder())
 
 	actualWidth := p.Width - baseStyle.GetHorizontalBorderSize()
+	actualHeight := p.Height - baseStyle.GetVerticalBorderSize()
 
 	return lipgloss.NewStyle().
 		Width(actualWidth).
+		Height(actualHeight).
 		Padding(p.Padding...).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(p.BorderForeground)
