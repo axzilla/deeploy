@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/axzilla/deeploy/internal/data"
+	"github.com/axzilla/deeploy/internal/tui/messages"
 	"github.com/axzilla/deeploy/internal/tui/ui/components"
 	"github.com/axzilla/deeploy/internal/tui/ui/styles"
 	"github.com/axzilla/deeploy/internal/tui/utils"
@@ -27,8 +28,6 @@ type ProjectDeletePage struct {
 	width    int
 	height   int
 }
-
-type projectDeleteMsg *data.ProjectDTO
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructors
@@ -67,13 +66,13 @@ func (p ProjectDeletePage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if p.decision == confirmNo {
 				return p, func() tea.Msg {
-					return PopPageMsg{}
+					return messages.PopPageMsg{}
 				}
 			}
 			return p, tea.Batch(
 				p.DeleteProject,
 				func() tea.Msg {
-					return PopPageMsg{}
+					return messages.PopPageMsg{}
 				},
 			)
 		}
@@ -156,5 +155,5 @@ func (p ProjectDeletePage) DeleteProject() tea.Msg {
 	defer res.Body.Close()
 
 	log.Println(res)
-	return projectDeleteMsg(p.project)
+	return messages.ProjectDeleteMsg(p.project)
 }

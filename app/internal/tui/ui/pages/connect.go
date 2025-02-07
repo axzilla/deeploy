@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/axzilla/deeploy/internal/tui/config"
+	"github.com/axzilla/deeploy/internal/tui/messages"
 	"github.com/axzilla/deeploy/internal/tui/ui/components"
 	"github.com/axzilla/deeploy/internal/tui/ui/styles"
 	"github.com/axzilla/deeploy/internal/tui/viewtypes"
@@ -36,14 +37,6 @@ type ConnectPage struct {
 type authCallback struct {
 	token string
 	err   error
-}
-
-type AuthErrorMsg struct {
-	err error
-}
-
-type AuthSuccessMsg struct {
-	token string
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,7 +81,7 @@ func (m ConnectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		}
-	case AuthSuccessMsg:
+	case messages.AuthSuccessMsg:
 		return m, func() tea.Msg {
 			return viewtypes.Dashboard
 		}
@@ -233,7 +226,7 @@ func (m ConnectPage) startBrowserAuth() tea.Cmd {
 		// Waiting for token
 		result := <-callback
 		if result.err != nil {
-			return AuthErrorMsg{err: result.err}
+			return messages.AuthErrorMsg{Err: result.err}
 		}
 
 		// Save config
@@ -242,9 +235,9 @@ func (m ConnectPage) startBrowserAuth() tea.Cmd {
 			Token:  result.token,
 		}
 		if err := config.SaveConfig(&cfg); err != nil {
-			return AuthErrorMsg{err: err}
+			return messages.AuthErrorMsg{Err: err}
 		}
 
-		return PushPageMsg{Page: NewDashboard()}
+		return messages.PushPageMsg{Page: NewDashboard()}
 	}
 }

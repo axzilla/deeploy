@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"github.com/axzilla/deeploy/internal/tui/messages"
 	"github.com/axzilla/deeploy/internal/tui/ui/components"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -36,7 +37,7 @@ func (p DashboardPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if msg.String() == "p" {
 			return p, func() tea.Msg {
-				return PushPageMsg{Page: NewProjectPage()}
+				return messages.PushPageMsg{Page: NewProjectPage()}
 			}
 		}
 	case tea.WindowSizeMsg:

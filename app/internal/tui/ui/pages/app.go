@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/axzilla/deeploy/internal/tui/config"
+	"github.com/axzilla/deeploy/internal/tui/messages"
 	"github.com/axzilla/deeploy/internal/tui/ui/components"
 	"github.com/axzilla/deeploy/internal/tui/ui/styles"
 	tea "github.com/charmbracelet/bubbletea"
@@ -37,12 +38,6 @@ type App struct {
 	height int
 }
 
-type PushPageMsg struct {
-	Page tea.Model
-}
-
-type PopPageMsg struct{}
-
 // /////////////////////////////////////////////////////////////////////////////
 // Constructors
 // /////////////////////////////////////////////////////////////////////////////
@@ -74,7 +69,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if msg.Type == tea.KeyEsc {
 			return a, func() tea.Msg {
-				return PopPageMsg{}
+				return messages.PopPageMsg{}
 			}
 		}
 
@@ -112,7 +107,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.stack[len(a.stack)-1] = updatedPage
 		return a, cmd
 
-	case PushPageMsg:
+	case messages.PushPageMsg:
 		newPage := msg.Page
 
 		a.stack = append(a.stack, newPage)
@@ -129,7 +124,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			newPage.Init(),
 		)
 
-	case PopPageMsg:
+	case messages.PopPageMsg:
 		if len(a.stack) > 1 {
 			a.stack = a.stack[:len(a.stack)-1]
 			return a, nil

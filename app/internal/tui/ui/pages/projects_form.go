@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/axzilla/deeploy/internal/data"
+	"github.com/axzilla/deeploy/internal/tui/messages"
 	"github.com/axzilla/deeploy/internal/tui/ui/components"
 	"github.com/axzilla/deeploy/internal/tui/utils"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -22,9 +23,6 @@ type ProjectFormPage struct {
 	width      int
 	height     int
 }
-
-type projectCreatedMsg data.ProjectDTO
-type projectUpdatedMsg data.ProjectDTO
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructors
@@ -65,7 +63,7 @@ func (p ProjectFormPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(p.titleInput.Value()) > 0 {
 				return p, tea.Batch(
 					p.Submit,
-					func() tea.Msg { return PopPageMsg{} },
+					func() tea.Msg { return messages.PopPageMsg{} },
 				)
 			}
 
@@ -137,7 +135,7 @@ func (p ProjectFormPage) CreateProject() tea.Msg {
 		return nil
 	}
 
-	return projectCreatedMsg(project)
+	return messages.ProjectCreatedMsg(project)
 }
 
 func (p ProjectFormPage) UpdateProject() tea.Msg {
@@ -161,5 +159,5 @@ func (p ProjectFormPage) UpdateProject() tea.Msg {
 		return nil
 	}
 
-	return projectUpdatedMsg(project)
+	return messages.ProjectUpdatedMsg(project)
 }

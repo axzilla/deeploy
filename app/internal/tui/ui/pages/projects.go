@@ -6,6 +6,7 @@ import (
 
 	"github.com/axzilla/deeploy/internal/data"
 	"github.com/axzilla/deeploy/internal/tui/config"
+	"github.com/axzilla/deeploy/internal/tui/messages"
 	"github.com/axzilla/deeploy/internal/tui/ui/components"
 	"github.com/axzilla/deeploy/internal/tui/ui/styles"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,6 +18,7 @@ import (
 // /////////////////////////////////////////////////////////////////////////////
 
 type ProjectPage struct {
+	stack         []tea.Model
 	width         int
 	height        int
 	message       string
@@ -24,9 +26,6 @@ type ProjectPage struct {
 	selectedIndex int
 	err           error
 }
-
-type errMsg error
-type projectsMsg []data.ProjectDTO
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructors
@@ -50,15 +49,15 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "n":
 			return p, func() tea.Msg {
-				return PushPageMsg{Page: NewProjectFormPage(nil)}
+				return messages.PushPageMsg{Page: NewProjectFormPage(nil)}
 			}
 		case "e":
 			return p, func() tea.Msg {
-				return PushPageMsg{Page: NewProjectFormPage(&p.projects[p.selectedIndex])}
+				return messages.PushPageMsg{Page: NewProjectFormPage(&p.projects[p.selectedIndex])}
 			}
 		case "d":
 			return p, func() tea.Msg {
-				return PushPageMsg{Page: NewProjectDeletePage(&p.projects[p.selectedIndex])}
+				return messages.PushPageMsg{Page: NewProjectDeletePage(&p.projects[p.selectedIndex])}
 			}
 		case "down", "j":
 			if p.selectedIndex == len(p.projects)-1 {
@@ -76,16 +75,19 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		p.width = msg.Width
 		p.height = msg.Height
-		return p, nil
-	case errMsg:
+		currentPage := p.stack[len(p.stack)-1]
+		updatedPage, cmd := currentPage.Update(msg)
+		p.stack[len(p.stack)-1] = updatedPage
+		return p, cmd
+	case messages.ProjectErrMsg:
 		p.err = msg
-	case projectsMsg:
+	case messages.ProjectsInitDataMsg:
 		p.projects = msg
 		return p, nil
-	case projectCreatedMsg:
+	case messages.ProjectCreatedMsg:
 		p.projects = append(p.projects, data.ProjectDTO(msg))
 		return p, nil
-	case projectUpdatedMsg:
+	case messages.ProjectUpdatedMsg:
 		project := msg
 		for i, v := range p.projects {
 			if v.ID == project.ID {
@@ -93,7 +95,7 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 		}
-	case projectDeleteMsg:
+	case messages.ProjectDeleteMsg:
 		project := msg
 		var index int
 		for i, v := range p.projects {
@@ -151,30 +153,30 @@ func (p ProjectPage) View() string {
 func getInitData() tea.Msg {
 	config, err := config.LoadConfig()
 	if err != nil {
-		return PushPageMsg{Page: NewConnectPage()}
+		return messages.PushPageMsg{Page: NewConnectPage()}
 	}
 
 	r, err := http.NewRequest("GET", "http://"+config.Server+"/api/projects", nil)
 	if err != nil {
-		return errMsg(err)
+		return messages.ProjectErrMsg(err)
 	}
 	r.Header.Set("Authorization", "Bearer "+config.Token)
 
 	client := http.Client{}
 	res, err := client.Do(r)
 	if err != nil {
-		return errMsg(err)
+		return messages.ProjectErrMsg(err)
 	}
 	if res.StatusCode == http.StatusUnauthorized {
-		return PushPageMsg{Page: NewConnectPage()}
+		return messages.PushPageMsg{Page: NewConnectPage()}
 	}
 	defer res.Body.Close()
 
 	var projects []data.ProjectDTO
 	err = json.NewDecoder(res.Body).Decode(&projects)
 	if err != nil {
-		return errMsg(err)
+		return messages.ProjectErrMsg(err)
 	}
 
-	return projectsMsg(projects)
+	return messages.ProjectsInitDataMsg(projects)
 }
