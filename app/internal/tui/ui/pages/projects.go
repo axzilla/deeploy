@@ -75,10 +75,7 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		p.width = msg.Width
 		p.height = msg.Height
-		currentPage := p.stack[len(p.stack)-1]
-		updatedPage, cmd := currentPage.Update(msg)
-		p.stack[len(p.stack)-1] = updatedPage
-		return p, cmd
+		return p, nil
 	case messages.ProjectErrMsg:
 		p.err = msg
 	case messages.ProjectsInitDataMsg:

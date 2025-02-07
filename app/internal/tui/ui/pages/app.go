@@ -15,15 +15,6 @@ import (
 // Types & Messages
 // /////////////////////////////////////////////////////////////////////////////
 
-type ActiveArea string
-
-const (
-	menu     ActiveArea = "menu"
-	projects ActiveArea = "projects"
-	settings ActiveArea = "settings"
-	logs     ActiveArea = "logs"
-)
-
 type Viewstack struct {
 	stack []tea.Model
 }
