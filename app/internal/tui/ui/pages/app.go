@@ -24,9 +24,10 @@ type HasInputView interface {
 }
 
 type App struct {
-	stack  []tea.Model
-	width  int
-	height int
+	stack       []tea.Model
+	currentPage tea.Model
+	width       int
+	height      int
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -51,7 +52,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, tea.Quit
 		}
 
-		currentPage := a.stack[len(a.stack)-1]
+		currentPage := a.currentPage
 		if page, ok := currentPage.(HasInputView); ok && page.HasFocusedInput() {
 			// this disable "q"
 		} else if msg.String() == "q" {
@@ -72,7 +73,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.height = msg.Height
 
 		// If no pages yet, create first one
-		if len(a.stack) == 0 {
+		if a.currentPage == nil {
 			config, err := config.LoadConfig()
 			var page tea.Model
 
@@ -84,24 +85,24 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			// Add first page to stack
-			a.stack = append(a.stack, page)
+			a.currentPage = page
 
 			// Update page with window size and initialize it
 			updatedPage, cmd := page.Update(msg)
-			a.stack[len(a.stack)-1] = updatedPage
+			a.currentPage = updatedPage
 			return a, tea.Batch(cmd, updatedPage.Init())
 		}
 
 		// Update current page's window size
-		currentPage := a.stack[len(a.stack)-1]
+		currentPage := a.currentPage
 		updatedPage, cmd := currentPage.Update(msg)
-		a.stack[len(a.stack)-1] = updatedPage
+		a.currentPage = updatedPage
 		return a, cmd
 
-	case messages.PushPageMsg:
+	case messages.ChangePageMsg:
 		newPage := msg.Page
 
-		a.stack = append(a.stack, newPage)
+		a.currentPage = newPage
 
 		// Batch window size and init commands together
 		// This prevents double rendering by ensuring both happen in sequence
@@ -123,12 +124,12 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// All other messages go to current page
 	default:
-		if len(a.stack) == 0 {
+		if a.currentPage == nil {
 			return a, nil
 		}
-		currentPage := a.stack[len(a.stack)-1]
+		currentPage := a.currentPage
 		updatedPage, cmd := currentPage.Update(msg)
-		a.stack[len(a.stack)-1] = updatedPage
+		a.currentPage = updatedPage
 		return a, cmd
 	}
 
@@ -141,11 +142,11 @@ type FooterMenuItem struct {
 }
 
 func (a App) View() string {
-	if len(a.stack) == 0 {
+	if a.currentPage == nil {
 		return "Loading..."
 	}
 
-	main := a.stack[len(a.stack)-1].View()
+	main := a.currentPage.View()
 
 	footerMenuItems := []FooterMenuItem{
 		{Key: ":", Desc: "menu"},

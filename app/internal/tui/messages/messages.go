@@ -10,6 +10,9 @@ type PushPageMsg struct {
 	Page tea.Model
 }
 type PopPageMsg struct{}
+type ChangePageMsg struct {
+	Page tea.Model
+}
 
 // Auth Messages
 type AuthErrorMsg struct {
