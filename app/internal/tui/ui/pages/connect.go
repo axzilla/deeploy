@@ -238,6 +238,6 @@ func (m ConnectPage) startBrowserAuth() tea.Cmd {
 			return messages.AuthErrorMsg{Err: err}
 		}
 
-		return messages.PushPageMsg{Page: NewDashboard()}
+		return messages.ChangePageMsg{Page: NewDashboard()}
 	}
 }

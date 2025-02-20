@@ -6,10 +6,7 @@ import (
 )
 
 // Navigation Messages
-type PushPageMsg struct {
-	Page tea.Model
-}
-type PopPageMsg struct{}
+
 type ChangePageMsg struct {
 	Page tea.Model
 }
@@ -28,3 +25,5 @@ type ProjectUpdatedMsg data.ProjectDTO
 type ProjectDeleteMsg *data.ProjectDTO
 type ProjectErrMsg error
 type ProjectsInitDataMsg []data.ProjectDTO
+type ProjectPushPageMsg struct{ Page tea.Model }
+type ProjectPopPageMsg struct{}

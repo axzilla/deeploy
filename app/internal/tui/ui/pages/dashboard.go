@@ -37,7 +37,7 @@ func (p DashboardPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if msg.String() == "p" {
 			return p, func() tea.Msg {
-				return messages.PushPageMsg{Page: NewProjectPage()}
+				return messages.ChangePageMsg{Page: NewProjectPage()}
 			}
 		}
 	case tea.WindowSizeMsg:

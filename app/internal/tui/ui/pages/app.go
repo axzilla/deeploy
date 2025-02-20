@@ -59,12 +59,6 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, tea.Quit
 		}
 
-		if msg.Type == tea.KeyEsc {
-			return a, func() tea.Msg {
-				return messages.PopPageMsg{}
-			}
-		}
-
 	}
 
 	switch msg := msg.(type) {
@@ -115,12 +109,6 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			},
 			newPage.Init(),
 		)
-
-	case messages.PopPageMsg:
-		if len(a.stack) > 1 {
-			a.stack = a.stack[:len(a.stack)-1]
-			return a, nil
-		}
 
 	// All other messages go to current page
 	default:

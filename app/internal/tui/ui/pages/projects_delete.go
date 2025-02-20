@@ -66,13 +66,13 @@ func (p ProjectDeletePage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if p.decision == confirmNo {
 				return p, func() tea.Msg {
-					return messages.PopPageMsg{}
+					return messages.ProjectPopPageMsg{}
 				}
 			}
 			return p, tea.Batch(
 				p.DeleteProject,
 				func() tea.Msg {
-					return messages.PopPageMsg{}
+					return messages.ProjectPopPageMsg{}
 				},
 			)
 		}

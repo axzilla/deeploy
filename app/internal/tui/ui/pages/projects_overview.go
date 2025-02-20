@@ -18,7 +18,7 @@ import (
 // Types & Messages
 // /////////////////////////////////////////////////////////////////////////////
 
-type ProjectPage struct {
+type ProjectListPage struct {
 	stack         []tea.Model
 	width         int
 	height        int
@@ -32,19 +32,19 @@ type ProjectPage struct {
 // Constructors
 ///////////////////////////////////////////////////////////////////////////////
 
-func NewProjectPage() ProjectPage {
-	return ProjectPage{}
+func NewProjectListPage() ProjectListPage {
+	return ProjectListPage{}
 }
 
 // /////////////////////////////////////////////////////////////////////////////
 // Bubbletea Interface
 // /////////////////////////////////////////////////////////////////////////////
 
-func (p ProjectPage) Init() tea.Cmd {
-	return getInitData
+func (p ProjectListPage) Init() tea.Cmd {
+	return getProjects
 }
 
-func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (p ProjectListPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		log.Println(msg)
@@ -144,7 +144,7 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return p, nil
 }
 
-func (p ProjectPage) View() string {
+func (p ProjectListPage) View() string {
 	logo := lipgloss.NewStyle().
 		Width(p.width).
 		Align(lipgloss.Center).
@@ -183,7 +183,7 @@ func (p ProjectPage) View() string {
 // Helper Methods
 // /////////////////////////////////////////////////////////////////////////////
 
-func getInitData() tea.Msg {
+func getProjects() tea.Msg {
 	config, err := config.LoadConfig()
 	if err != nil {
 		return messages.ChangePageMsg{Page: NewConnectPage()}

@@ -63,7 +63,7 @@ func (p ProjectFormPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(p.titleInput.Value()) > 0 {
 				return p, tea.Batch(
 					p.Submit,
-					func() tea.Msg { return messages.PopPageMsg{} },
+					func() tea.Msg { return messages.ProjectPopPageMsg{} },
 				)
 			}
 
