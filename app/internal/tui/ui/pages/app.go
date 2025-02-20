@@ -24,7 +24,6 @@ type HasInputView interface {
 }
 
 type App struct {
-	stack       []tea.Model
 	currentPage tea.Model
 	width       int
 	height      int
@@ -35,10 +34,7 @@ type App struct {
 // /////////////////////////////////////////////////////////////////////////////
 
 func NewApp() App {
-	return App{
-		stack: make([]tea.Model, 0),
-	}
-
+	return App{}
 }
 
 // We wait for window size before creating pages

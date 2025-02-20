@@ -47,7 +47,7 @@ func (p ProjectListPage) Init() tea.Cmd {
 func (p ProjectListPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		log.Println(msg)
+		log.Println("FROM PROJECTS LIST: ", msg)
 		if msg.Type == tea.KeyEsc {
 			if len(p.stack) == 0 {
 				return p, func() tea.Msg {
@@ -103,29 +103,6 @@ func (p ProjectListPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				p.projects[i] = data.ProjectDTO(project)
 				break
 			}
-		}
-
-	case messages.ProjectPushPageMsg:
-		newPage := msg.Page
-
-		p.stack = append(p.stack, newPage)
-
-		// Batch window size and init commands together
-		// This prevents double rendering by ensuring both happen in sequence
-		return p, tea.Batch(
-			func() tea.Msg {
-				return tea.WindowSizeMsg{
-					Width:  p.width,
-					Height: p.height,
-				}
-			},
-			newPage.Init(),
-		)
-
-	case messages.ProjectPopPageMsg:
-		if len(p.stack) > 1 {
-			p.stack = p.stack[:len(p.stack)-1]
-			return p, nil
 		}
 
 	case messages.ProjectDeleteMsg:

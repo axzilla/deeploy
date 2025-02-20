@@ -1,15 +1,9 @@
 package pages
 
 import (
-	"encoding/json"
 	"log"
-	"net/http"
 
-	"github.com/axzilla/deeploy/internal/data"
-	"github.com/axzilla/deeploy/internal/tui/config"
 	"github.com/axzilla/deeploy/internal/tui/messages"
-	"github.com/axzilla/deeploy/internal/tui/ui/components"
-	"github.com/axzilla/deeploy/internal/tui/ui/styles"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -19,13 +13,9 @@ import (
 // /////////////////////////////////////////////////////////////////////////////
 
 type ProjectPage struct {
-	stack         []tea.Model
-	width         int
-	height        int
-	message       string
-	projects      []data.ProjectDTO
-	selectedIndex int
-	err           error
+	stack  []tea.Model
+	width  int
+	height int
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,7 +23,9 @@ type ProjectPage struct {
 ///////////////////////////////////////////////////////////////////////////////
 
 func NewProjectPage() ProjectPage {
-	return ProjectPage{}
+	return ProjectPage{
+		stack: make([]tea.Model, 0),
+	}
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -41,13 +33,13 @@ func NewProjectPage() ProjectPage {
 // /////////////////////////////////////////////////////////////////////////////
 
 func (p ProjectPage) Init() tea.Cmd {
-	return getInitData
+	return nil
 }
 
 func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		log.Println(msg)
+		log.Println("FROM PROJECTS: ", msg)
 		if msg.Type == tea.KeyEsc {
 			if len(p.stack) == 0 {
 				return p, func() tea.Msg {
@@ -58,52 +50,39 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return messages.ProjectPopPageMsg{}
 			}
 		}
-		switch msg.String() {
-		case "n":
-			return p, func() tea.Msg {
-				return messages.ProjectPushPageMsg{Page: NewProjectFormPage(nil)}
-			}
-		case "e":
-			return p, func() tea.Msg {
-				return messages.ProjectPushPageMsg{Page: NewProjectFormPage(&p.projects[p.selectedIndex])}
-			}
-		case "d":
-			return p, func() tea.Msg {
-				return messages.ProjectPushPageMsg{Page: NewProjectDeletePage(&p.projects[p.selectedIndex])}
-			}
-		case "down", "j":
-			if p.selectedIndex == len(p.projects)-1 {
-				p.selectedIndex = 0
-			} else {
-				p.selectedIndex++
-			}
-		case "up", "k":
-			if p.selectedIndex == 0 {
-				p.selectedIndex = len(p.projects) - 1
-			} else {
-				p.selectedIndex--
-			}
+
+		// Pass current page's KeyMsg
+		if len(p.stack) == 0 {
+			return p, nil
 		}
+		currentPage := p.stack[len(p.stack)-1]
+		updatedPage, cmd := currentPage.Update(msg)
+		p.stack[len(p.stack)-1] = updatedPage
+		return p, cmd
+
 	case tea.WindowSizeMsg:
 		p.width = msg.Width
 		p.height = msg.Height
-		return p, nil
-	case messages.ProjectErrMsg:
-		p.err = msg
-	case messages.ProjectsInitDataMsg:
-		p.projects = msg
-		return p, nil
-	case messages.ProjectCreatedMsg:
-		p.projects = append(p.projects, data.ProjectDTO(msg))
-		return p, nil
-	case messages.ProjectUpdatedMsg:
-		project := msg
-		for i, v := range p.projects {
-			if v.ID == project.ID {
-				p.projects[i] = data.ProjectDTO(project)
-				break
-			}
+
+		// If no pages yet, create first one
+		if len(p.stack) == 0 {
+
+			page := NewProjectListPage()
+
+			// Add first page to stack
+			p.stack = append(p.stack, page)
+
+			// Update page with window size and initialize it
+			updatedPage, cmd := page.Update(msg)
+			p.stack[len(p.stack)-1] = updatedPage
+			return p, tea.Batch(cmd, updatedPage.Init())
 		}
+
+		// Update current page's window size
+		currentPage := p.stack[len(p.stack)-1]
+		updatedPage, cmd := currentPage.Update(msg)
+		p.stack[len(p.stack)-1] = updatedPage
+		return p, cmd
 
 	case messages.ProjectPushPageMsg:
 		newPage := msg.Page
@@ -127,19 +106,6 @@ func (p ProjectPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.stack = p.stack[:len(p.stack)-1]
 			return p, nil
 		}
-
-	case messages.ProjectDeleteMsg:
-		project := msg
-		var index int
-		for i, v := range p.projects {
-			if v.ID == project.ID {
-				index = i
-				break
-			}
-		}
-		p.projects = append(p.projects[:index], p.projects[index+1:]...)
-		p.selectedIndex--
-		return p, nil
 	}
 	return p, nil
 }
@@ -150,66 +116,13 @@ func (p ProjectPage) View() string {
 		Align(lipgloss.Center).
 		Render("🔥deeploy.sh\n")
 
-	var cards []string
-	if p.err != nil {
-		cards = append(cards, components.ErrorCard(30).Render(p.err.Error()))
-	} else {
-		for i, project := range p.projects {
-			props := components.CardProps{
-				Width:   30,
-				Padding: []int{0, 1},
-			}
-			if p.selectedIndex == i {
-				props.BorderForeground = styles.ColorPrimary
-			}
-			cards = append(cards, components.Card(props).Render(project.Title))
-		}
+	if len(p.stack) == 0 {
+		return lipgloss.Place(p.width, p.height, lipgloss.Center, lipgloss.Center,
+			lipgloss.JoinVertical(0.5, logo, "Loading..."))
 	}
 
-	projectsView := lipgloss.JoinVertical(0.5, cards...)
-
-	if len(cards) == 0 {
-		projectsView = components.Card(components.CardProps{Width: 30}).Align(lipgloss.Position(0.5)).Render(styles.FocusedStyle.Render("No projects yet"))
-	}
-
-	view := lipgloss.JoinVertical(0.5, logo, projectsView)
-
+	main := p.stack[len(p.stack)-1].View()
+	view := lipgloss.JoinVertical(0.5, logo, main)
 	layout := lipgloss.Place(p.width, p.height, lipgloss.Center, lipgloss.Center, view)
-
 	return layout
-}
-
-// /////////////////////////////////////////////////////////////////////////////
-// Helper Methods
-// /////////////////////////////////////////////////////////////////////////////
-
-func getInitData() tea.Msg {
-	config, err := config.LoadConfig()
-	if err != nil {
-		return messages.ChangePageMsg{Page: NewConnectPage()}
-	}
-
-	r, err := http.NewRequest("GET", "http://"+config.Server+"/api/projects", nil)
-	if err != nil {
-		return messages.ProjectErrMsg(err)
-	}
-	r.Header.Set("Authorization", "Bearer "+config.Token)
-
-	client := http.Client{}
-	res, err := client.Do(r)
-	if err != nil {
-		return messages.ProjectErrMsg(err)
-	}
-	if res.StatusCode == http.StatusUnauthorized {
-		return messages.ChangePageMsg{Page: NewConnectPage()}
-	}
-	defer res.Body.Close()
-
-	var projects []data.ProjectDTO
-	err = json.NewDecoder(res.Body).Decode(&projects)
-	if err != nil {
-		return messages.ProjectErrMsg(err)
-	}
-
-	return messages.ProjectsInitDataMsg(projects)
 }
